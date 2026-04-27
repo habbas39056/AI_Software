@@ -1,0 +1,118 @@
+@model AdwiseAiPlatform.Models.Customer
+@{ ViewData["Title"] = Model.Name + " - Config"; }
+
+@{
+    int daysLeft = Model.SubscriptionExpiry.HasValue ? (int)(Model.SubscriptionExpiry.Value - DateTime.UtcNow).TotalDays : 0;
+    if (daysLeft < 0) daysLeft = 0;
+}
+
+<div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem;">
+    <div>
+        <h1>@Model.Name (360° View)</h1>
+        <p class="subtitle" style="margin-bottom: 0;">Manage integrations, bot knowledge, and captured leads.</p>
+    </div>
+    <div style="text-align: right;">
+        <span class="badge @(Model.SubscriptionStatus == "Active" ? "active" : "suspended")" style="font-size: 0.9rem; padding: 0.4rem 1rem;">@Model.SubscriptionStatus</span>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0.25rem 0 0;">Expires: @(Model.SubscriptionExpiry?.ToShortDateString() ?? "N/A") (@daysLeft days left)</p>
+    </div>
+</div>
+
+<!-- Subscription Admin Controls -->
+<div style="background: white; border: 1px solid var(--card-border); border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+    <div style="font-size: 0.85rem; color: #475569;">
+        <strong>Subscription Control:</strong> @Model.SubscriptionDays days cycle | PKR @Model.MonthlyFee.ToString("N0")
+    </div>
+    <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+        @if (Model.SubscriptionStatus == "Active") {
+        <form method="post" action="/Admin/ToggleSubscription" style="margin: 0;">
+            <input type="hidden" name="id" value="@Model.WhatsAppNumber" />
+            <input type="hidden" name="status" value="Suspended" />
+            <button type="submit" style="background: #fee2e2; color: #ef4444; border: 1px solid #fca5a5; padding: 0.4rem 1rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer;" onclick="return confirm('Block this client portal?')">🚫 Block Portal</button>
+        </form>
+        } else {
+        <form method="post" action="/Admin/ToggleSubscription" style="margin: 0;">
+            <input type="hidden" name="id" value="@Model.WhatsAppNumber" />
+            <input type="hidden" name="status" value="Active" />
+            <button type="submit" style="background: #dcfce7; color: #166534; border: 1px solid #86efac; padding: 0.4rem 1rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer;">✅ Unblock Portal</button>
+        </form>
+        }
+        <form method="post" action="/Admin/RenewSubscription" style="margin: 0; display: flex; gap: 0.3rem; align-items: center;">
+            <input type="hidden" name="id" value="@Model.WhatsAppNumber" />
+            <input type="hidden" name="fee" value="@Model.MonthlyFee" />
+            <input type="number" name="days" value="@Model.SubscriptionDays" min="1" style="width: 55px; padding: 0.4rem; border: 1px solid var(--card-border); border-radius: 6px; font-size: 0.8rem; text-align: center;" />
+            <button type="submit" style="background: #10B981; color: white; border: none; padding: 0.4rem 1rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer;">🔄 Renew</button>
+        </form>
+    </div>
+</div>
+
+<div class="main-wrapper" style="grid-template-columns: 1fr 2fr;">
+    <!-- LEFT: WhatsApp Bot & Evolution API Linking -->
+    <div class="white-box">
+        <h2 class="box-title" style="display: flex; align-items: center; gap: 0.5rem;">
+            <svg width="20" height="20" fill="var(--brand-green)" viewBox="0 0 16 16"><path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326z"/></svg> 
+            WhatsApp Agent Linking
+        </h2>
+        
+        <div style="margin: 1.5rem 0;">
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Instance Name:</p>
+            <div style="background: var(--main-bg); border: 1px solid var(--card-border); padding: 0.6rem; border-radius: 6px; font-family: monospace; font-weight: 600;">
+                @Model.InstanceName
+            </div>
+        </div>
+
+        <div id="qr-container" style="text-align: center; margin-top: 2rem; padding: 2rem; border: 1px dashed var(--card-border); border-radius: 12px;">
+            <button id="generateQRBtn" class="btn-primary" style="margin: 0 auto;">Generate QR Code</button>
+            <div id="loader" style="display: none; margin-top: 1rem; color: var(--brand-green); font-size: 0.85rem; font-weight: 600;">Contacting Evolution API...</div>
+            <img id="qr-img" src="" style="display: none; width: 200px; height: 200px; margin: 1rem auto; mix-blend-mode: multiply;" />
+        </div>
+    </div>
+
+    <!-- RIGHT: Knowledge Base & Leads Tab -->
+    <div>
+        <div class="white-box" style="margin-bottom: 1.5rem; text-align: center; padding: 3rem 2rem;">
+            <svg width="48" height="48" fill="none" stroke="var(--brand-green)" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom: 1rem;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477-4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+            </svg>
+            <h2 class="box-title" style="margin-bottom: 0.5rem; justify-content: center;">Knowledge Base</h2>
+            <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1.5rem;">Manage bot knowledge and custom mappings.</p>
+            <a href="/Admin/KnowledgeBase/@Uri.EscapeDataString(Model.WhatsAppNumber)" class="btn-primary" style="text-decoration: none; display: inline-flex; justify-content: center; width: 100%;">View Knowledge Base</a>
+        </div>
+
+        <div class="white-box" style="text-align: center; padding: 3rem 2rem;">
+            <svg width="48" height="48" fill="none" stroke="var(--brand-green)" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom: 1rem;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+            </svg>
+            <h2 class="box-title" style="margin-bottom: 0.5rem; justify-content: center;">Captured Leads (@Model.Leads.Count)</h2>
+            <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1.5rem;">View and manage leads captured by the AI.</p>
+            <a href="/Admin/Leads/@Uri.EscapeDataString(Model.WhatsAppNumber)" class="btn-primary" style="text-decoration: none; display: inline-flex; justify-content: center; width: 100%;">View Captured Leads</a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('generateQRBtn').addEventListener('click', function() {
+            this.style.display = 'none';
+            document.getElementById('loader').style.display = 'block';
+
+            // Fetches QR code from our pre-built Evolution bridge API
+            fetch(`/api/evolution/qr/@Model.InstanceName`)
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('loader').style.display = 'none';
+                    if(data.base64) {
+                        document.getElementById('qr-img').src = data.base64;
+                        document.getElementById('qr-img').style.display = 'block';
+                    } else {
+                        alert(data.error || "Evolution API might not be running on Port 8080. QR failed.");
+                        document.getElementById('generateQRBtn').style.display = 'inline-flex';
+                    }
+                })
+                .catch(err => {
+                    document.getElementById('loader').style.display = 'none';
+                    alert("System error connecting to local Evolution bridge.");
+                    document.getElementById('generateQRBtn').style.display = 'inline-flex';
+                });
+        });
+    </script>
+}

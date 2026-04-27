@@ -1,0 +1,50 @@
+@model AdwiseAiPlatform.Models.Customer
+@{ ViewData["Title"] = "Edit Setup Engine"; }
+
+<h1 style="margin-top: 0;">Edit Settings: @Model.Name</h1>
+<p class="subtitle" style="margin-bottom: 2rem;">Modify core identity limits and connection strings.</p>
+
+<div class="white-box" style="max-width: 650px;">
+    <form method="post" action="/Admin/EditCustomer/@Uri.EscapeDataString(Model.WhatsAppNumber)">
+        <h4 style="margin-top:0; margin-bottom: 1rem; color: var(--text-secondary); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px;">Client Identity</h4>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div>
+                <label class="form-label">Customer Name</label>
+                <input type="text" name="Name" class="glass-input" value="@Model.Name" required />
+            </div>
+            <div>
+                <label class="form-label">Business Entity</label>
+                <input type="text" name="BusinessEntity" class="glass-input" value="@Model.BusinessEntity" />
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div>
+                <label class="form-label">Primary Admin Email</label>
+                <input type="email" name="Email" class="glass-input" value="@Model.Email" required />
+            </div>
+            <div>
+                <label class="form-label">WhatsApp Number (Auth Code)</label>
+                <input type="text" name="WhatsAppNumber" class="glass-input" value="@Model.WhatsAppNumber" required />
+            </div>
+        </div>
+
+        <div style="margin-top: 1rem;">
+            <label class="form-label">System Access Password</label>
+            <input type="text" name="Password" class="glass-input" value="@Model.Password" />
+        </div>
+        <h4 style="margin-top:2rem; margin-bottom: 1rem; color: var(--text-secondary); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px;">Engine Overrides</h4>
+
+        <label class="form-label">Evolution API Instance Mapping</label>
+        <input type="text" name="InstanceName" class="glass-input" value="@Model.InstanceName" required />
+
+        <label class="form-label">n8n Engine Webhook URL</label>
+        <input type="url" name="N8nWebhookUrl" class="glass-input" value="@Model.N8nWebhookUrl" />
+        
+        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+            <a href="/Admin/Clients" class="btn-secondary" style="text-decoration: none;">Cancel Changes</a>
+            <button type="submit" class="btn-primary" style="flex: 1; justify-content: center;">Apply Secure Updates</button>
+        </div>
+    </form>
+</div>

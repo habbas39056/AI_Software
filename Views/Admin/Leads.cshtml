@@ -1,0 +1,38 @@
+@model AdwiseAiPlatform.Models.Customer
+@{ ViewData["Title"] = Model.Name + " - Leads"; }
+
+<div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem;">
+    <div>
+        <a href="/Admin/Details/@Uri.EscapeDataString(Model.WhatsAppNumber)" class="btn-secondary" style="font-size: 0.85rem; padding: 0.4rem 0.8rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem; margin-bottom: 1rem;">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg> Back to 360 View
+        </a>
+        <h1>@Model.Name - Captured Leads</h1>
+        <p class="subtitle" style="margin-bottom: 0;">Manage and view all captured leads for this bot instance.</p>
+    </div>
+</div>
+
+<div class="white-box">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h2 class="box-title" style="margin: 0;">Captured Leads (@(Model.Leads?.Count ?? 0))</h2>
+    </div>
+
+    <table class="glass-table">
+        <thead>
+            <tr><th>Phone</th><th>AI Summary</th><th>Score</th></tr>
+        </thead>
+        <tbody>
+            @if(Model.Leads == null || !Model.Leads.Any()) {
+                <tr><td colspan="3" style="color: var(--text-muted); text-align: center; padding: 2rem 0;">No leads captured yet.</td></tr>
+            }
+            else {
+                @foreach(var lead in Model.Leads.OrderByDescending(l => l.LastMessageAt)) {
+                    <tr>
+                        <td style="font-family: monospace;">@lead.PhoneNumber</td>
+                        <td style="font-size: 0.85rem;">@lead.Summary</td>
+                        <td><span class="tag">@lead.Score</span></td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
