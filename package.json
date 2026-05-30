@@ -7,7 +7,7 @@
     "start": "node backend/server.js",
     "dev": "nodemon backend/server.js",
     "client": "cd ClientApp && npm run dev",
-    "build": "cd ClientApp && npm ci && npm run build",
+    "build": "cd ClientApp && npm ci --legacy-peer-deps && npm run build",
     "fullstack": "concurrently \"npm run dev\" \"npm run client\""
   },
   "repository": {
