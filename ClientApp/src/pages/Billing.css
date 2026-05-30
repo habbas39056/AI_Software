@@ -1,0 +1,76 @@
+.billing-page {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.mb-2 { margin-bottom: 2rem; }
+
+.stat-card.danger {
+  border-left: 4px solid #ef4444;
+}
+
+.row-suspended { background: rgba(239, 68, 68, 0.03); }
+.row-critical { background: rgba(239, 68, 68, 0.03); }
+.row-warning { background: rgba(245, 158, 11, 0.03); }
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  border: 1px solid transparent;
+}
+
+.status-pill .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.btn-success-sm {
+  background: #10B981;
+  color: white;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.2s;
+}
+
+.btn-success-sm:hover {
+  background: #059669;
+}
+
+.btn-danger-sm {
+  background: #fee2e2;
+  color: #ef4444;
+  border: 1px solid #fca5a5;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.2s;
+}
+
+.btn-danger-sm:hover {
+  background: #fca5a5;
+  color: white;
+}
+
+.block { display: block; }
+.text-xs { font-size: 0.75rem; }
+.text-sm { font-size: 0.85rem; }
+.text-lg { font-size: 1.1rem; }
+.font-semibold { font-weight: 600; }
+.font-bold { font-weight: 700; }
