@@ -37,7 +37,7 @@
 .kb-topic {
   font-weight: 700;
   color: var(--text-primary);
-  width: 25%;
+  width: 22%;
   vertical-align: top;
   font-size: 0.95rem;
 }
@@ -87,8 +87,10 @@
 }
 
 .modal-content {
-  width: 500px;
+  width: 560px;
   max-width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
   position: relative;
   padding: 2rem;
 }
@@ -108,3 +110,136 @@
 }
 
 .block { width: 100%; }
+
+/* ── File Badge ── */
+.file-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.file-badge.document {
+  background: rgba(59, 130, 246, 0.12);
+  color: #60a5fa;
+}
+
+.file-badge.picture {
+  background: rgba(16, 185, 129, 0.12);
+  color: #34d399;
+}
+
+.file-badge.video {
+  background: rgba(168, 85, 247, 0.12);
+  color: #c084fc;
+}
+
+.file-badge-link {
+  text-decoration: none;
+}
+
+.file-badge-link:hover .file-badge {
+  filter: brightness(1.2);
+  transform: scale(1.03);
+  transition: all 0.2s;
+}
+
+.text-muted {
+  color: var(--text-muted, #64748b);
+}
+
+/* ── File Drop Zone ── */
+.file-drop-zone {
+  border: 2px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.25rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.file-drop-zone:hover {
+  border-color: var(--brand-peach, #f97316);
+  background: rgba(249, 115, 22, 0.04);
+}
+
+.file-drop-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted, #64748b);
+}
+
+.file-drop-placeholder svg {
+  opacity: 0.5;
+}
+
+.file-hint {
+  font-size: 0.75rem;
+  opacity: 0.6;
+}
+
+/* ── File Preview ── */
+.file-preview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.file-preview-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.file-name {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-size {
+  font-size: 0.75rem;
+  color: var(--text-muted, #64748b);
+  white-space: nowrap;
+}
+
+.file-remove-btn {
+  background: rgba(239, 68, 68, 0.1);
+  border: none;
+  border-radius: 6px;
+  padding: 4px;
+  cursor: pointer;
+  color: #ef4444;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.file-remove-btn:hover {
+  background: #ef4444;
+  color: white;
+}
+
+/* ── Existing File Notice ── */
+.existing-file-notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}

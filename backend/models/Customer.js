@@ -59,6 +59,11 @@ const Customer = sequelize.define('Customer', {
     defaultValue: 14000,
     field: 'MonthlyFee'
   },
+  currency: {
+    type: DataTypes.STRING,
+    defaultValue: 'USD',
+    field: 'Currency'
+  },
   createdAt: {
     type: DataTypes.DATE,
     field: 'CreatedAt',

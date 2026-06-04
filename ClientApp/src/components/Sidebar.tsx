@@ -4,19 +4,22 @@ import {
   LayoutDashboard, 
   Users, 
   UserPlus,
+  UsersRound,
   BarChart3, 
   BookOpen, 
   CreditCard, 
   Lock, 
   Settings, 
   HelpCircle, 
-  LogOut
+  LogOut,
+  KanbanSquare,
+  DollarSign
 } from 'lucide-react';
 import { authService } from '../services/api';
 import './Sidebar.css';
 
 interface SidebarProps {
-  role: 'Super Admin' | 'Client';
+  role: 'Super Admin' | 'Client' | 'TeamMember';
   userName: string;
   userProfileImage?: string;
 }
@@ -57,6 +60,7 @@ const Sidebar: React.FC<SidebarProps> = ({ role, userName, userProfileImage }) =
               <Users size={18} />
               CRM & Clients
             </NavLink>
+
             <NavLink to="/billing" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
               <BarChart3 size={18} />
               Analytics & Billing
@@ -68,18 +72,38 @@ const Sidebar: React.FC<SidebarProps> = ({ role, userName, userProfileImage }) =
               <LayoutDashboard size={18} />
               Dashboard
             </NavLink>
-            <NavLink to="/knowledge-base" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-              <BookOpen size={18} />
-              Knowledge Base
-            </NavLink>
+            {role !== 'TeamMember' && (
+              <>
+                <NavLink to="/knowledge-base" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                  <BookOpen size={18} />
+                  Knowledge Base
+                </NavLink>
+              </>
+            )}
             <NavLink to="/leads" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
               <Users size={18} />
               Leads Center
             </NavLink>
-            <NavLink to="/billing" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-              <CreditCard size={18} />
-              Billing & Plan
+            <NavLink to="/pipeline" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+              <KanbanSquare size={18} />
+              Pipeline
             </NavLink>
+            {role !== 'TeamMember' && (
+              <>
+                <NavLink to="/commissions" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                  <DollarSign size={18} />
+                  Commissions
+                </NavLink>
+                <NavLink to="/team" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                  <UsersRound size={18} />
+                  Team Members
+                </NavLink>
+                <NavLink to="/billing" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                  <CreditCard size={18} />
+                  Billing & Plan
+                </NavLink>
+              </>
+            )}
           </>
         )}
       </nav>
@@ -99,14 +123,18 @@ const Sidebar: React.FC<SidebarProps> = ({ role, userName, userProfileImage }) =
               <Lock size={18} />
               Profile & Security
             </NavLink>
-            <NavLink to="/settings" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
-              <Settings size={18} />
-              Agent Config
-            </NavLink>
-            <NavLink to="/support" className="nav-link">
-              <HelpCircle size={18} />
-              Support Docs
-            </NavLink>
+            {role !== 'TeamMember' && (
+              <>
+                <NavLink to="/settings" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                  <Settings size={18} />
+                  Agent Config
+                </NavLink>
+                <NavLink to="/support" className="nav-link">
+                  <HelpCircle size={18} />
+                  Support Docs
+                </NavLink>
+              </>
+            )}
           </>
         )}
       </nav>

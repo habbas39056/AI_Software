@@ -1,0 +1,256 @@
+.lr-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.lr-modal {
+  background: #ffffff;
+  width: 100%;
+  max-width: 700px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+  font-family: 'Inter', sans-serif;
+  color: #1e293b;
+}
+
+.lr-header-bar {
+  padding: 1.5rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.lr-title {
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #0f172a;
+  margin: 0;
+}
+
+.lr-header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.lr-status-badge {
+  background: #dcfce7;
+  color: #166534;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.lr-close-btn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.lr-close-btn:hover {
+  color: #475569;
+}
+
+.lr-body {
+  padding: 0 2rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.lr-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.lr-info-box {
+  background: #f1f5f9;
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.lr-info-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  letter-spacing: 0.5px;
+}
+
+.lr-info-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.lr-info-value.text-red {
+  color: #ef4444;
+}
+
+.lr-section {
+  margin-bottom: 2rem;
+}
+
+.lr-section-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #64748b;
+  margin: 0 0 1rem 0;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.lr-activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.lr-activity-item {
+  display: flex;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.lr-activity-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.lr-activity-dot {
+  width: 8px;
+  height: 8px;
+  background: #3b82f6;
+  border-radius: 50%;
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+
+.lr-activity-content {
+  flex: 1;
+}
+
+.lr-act-text {
+  margin: 0 0 0.25rem 0;
+  font-size: 0.95rem;
+  color: #334155;
+  line-height: 1.5;
+}
+
+.lr-act-meta {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.lr-empty-text {
+  color: #94a3b8;
+  font-size: 0.9rem;
+  font-style: italic;
+  margin: 0;
+}
+
+.lr-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.lr-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.lr-form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.lr-form-group label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.lr-form-group select,
+.lr-form-group input,
+.lr-form-group textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: #0f172a;
+  background: #ffffff;
+  outline: none;
+}
+
+.lr-form-group select:focus,
+.lr-form-group input:focus,
+.lr-form-group textarea:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.lr-footer {
+  padding: 1.5rem 2rem;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8fafc;
+  border-radius: 0 0 12px 12px;
+}
+
+.lr-progress {
+  font-size: 0.9rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.lr-footer-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.lr-btn-secondary {
+  background: white;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.lr-btn-primary {
+  background: #3b82f6;
+  border: none;
+  color: white;
+  padding: 0.5rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.lr-btn-primary:hover {
+  background: #2563eb;
+}

@@ -20,8 +20,18 @@ const KnowledgeBase = sequelize.define('KnowledgeBase', {
   },
   content: {
     type: DataTypes.TEXT,
-    allowNull: false,
+    allowNull: true,
     field: 'Content'
+  },
+  fileUrl: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    field: 'FileUrl'
+  },
+  fileType: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    field: 'FileType'
   },
 }, {
   tableName: 'KnowledgeBases',

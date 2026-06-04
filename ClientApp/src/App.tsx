@@ -8,6 +8,7 @@ import AddCustomer from './pages/AddCustomer';
 import KnowledgeBase from './pages/KnowledgeBase';
 import ClientDetails from './pages/ClientDetails';
 import Leads from './pages/Leads';
+import Pipeline from './pages/Pipeline';
 import Billing from './pages/Billing';
 import ClientBilling from './pages/ClientBilling';
 import Settings from './pages/Settings';
@@ -15,6 +16,8 @@ import Profile from './pages/Profile';
 import Login from './pages/Login';
 import SuspendedScreen from './pages/SuspendedScreen';
 import SupportDocs from './pages/SupportDocs';
+import TeamMembers from './pages/TeamMembers';
+import Commissions from './pages/Commissions';
 import { authService } from './services/api';
 import './App.css';
 
@@ -78,7 +81,9 @@ function App() {
           <Routes>
             <Route path="/" element={user.role === 'Super Admin' ? <Dashboard /> : <ClientDashboard />} />
             <Route path="/clients" element={<Clients />} />
+            <Route path="/pipeline" element={<Pipeline />} />
             <Route path="/clients/add" element={<AddCustomer />} />
+            <Route path="/clients/edit/:id" element={<AddCustomer />} />
             <Route path="/onboarding" element={<AddCustomer />} />
             <Route path="/clients/:id" element={<ClientDetails />} />
             <Route path="/clients/:id/knowledge-base" element={<KnowledgeBase />} />
@@ -87,6 +92,9 @@ function App() {
             <Route path="/knowledge-base" element={<KnowledgeBase />} />
             <Route path="/leads" element={<Leads />} />
             
+            <Route path="/pipeline" element={<Pipeline />} />
+            <Route path="/commissions" element={<Commissions />} />
+            <Route path="/team" element={<TeamMembers />} />
             <Route path="/billing" element={user.role === 'Super Admin' ? <Billing /> : <ClientBilling />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/security" element={<Profile />} />

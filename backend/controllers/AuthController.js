@@ -32,6 +32,25 @@ exports.login = async (req, res) => {
       });
     }
 
+    // Team Member
+    const { TeamMember } = require('../models');
+    const teamMember = await TeamMember.findOne({ where: { username, isActive: true } });
+    if (teamMember && password === teamMember.password) {
+      const token = jwt.sign({
+        name: teamMember.fullName,
+        role: 'TeamMember',
+        customerId: teamMember.customerId,
+        username: teamMember.username
+      }, JWT_SECRET, { expiresIn: '1d' });
+
+      return res.json({
+        name: teamMember.fullName,
+        role: 'TeamMember',
+        customerId: teamMember.customerId,
+        token
+      });
+    }
+
     res.status(401).json({ message: 'Invalid Username or Password' });
   } catch (error) {
     console.error('LOGIN ERROR:', error);
@@ -60,6 +79,18 @@ exports.getCurrentUser = async (req, res) => {
       email: process.env.ADMIN_USERNAME,
       profileImage: process.env.ADMIN_PROFILE_IMAGE
     });
+  } else if (req.user.role === 'TeamMember') {
+    const { TeamMember } = require('../models');
+    const member = await TeamMember.findOne({ where: { username: req.user.username } });
+    if (member) {
+      return res.json({
+        ...req.user,
+        name: member.fullName,
+        email: member.username,
+        role: 'TeamMember',
+        monthlyGoal: member.monthlyGoal
+      });
+    }
   }
   res.json(req.user);
 };

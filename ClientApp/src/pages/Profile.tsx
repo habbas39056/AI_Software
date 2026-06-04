@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { authService } from '../services/api';
-import { User, Lock, Camera, Loader2 } from 'lucide-react';
+import { authService, clientService } from '../services/api';
+import { User, Lock, Camera, Loader2, Smartphone } from 'lucide-react';
 import './Profile.css';
 
 const Profile: React.FC = () => {
   const [profile, setProfile] = useState({ name: '', email: '', password: '', profileImage: '' });
+  const [currency, setCurrency] = useState('USD');
   const [updatingProfile, setUpdatingProfile] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -13,8 +14,12 @@ const Profile: React.FC = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const userResp = await authService.getCurrentUser();
+        const [userResp, settingsResp] = await Promise.all([
+          authService.getCurrentUser(),
+          clientService.getSettings().catch(() => ({}))
+        ]);
         setProfile({ name: userResp.name || '', email: userResp.email || '', password: '', profileImage: userResp.profileImage || '' });
+        if (settingsResp?.currency) setCurrency(settingsResp.currency);
       } catch (error) {
         console.error('Failed to load profile', error);
       } finally {
@@ -107,6 +112,50 @@ const Profile: React.FC = () => {
             </div>
           </form>
         </div>
+
+        <div className="white-box mt-2">
+          <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <div className="card-title-group" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <div className="card-icon green">
+                <Smartphone size={20} />
+              </div>
+              <div>
+                <h2 className="card-title" style={{ margin: 0 }}>General Preferences</h2>
+                <p className="card-subtitle" style={{ margin: 0, fontSize: '0.85rem', color: '#666' }}>Configure global portal settings</p>
+              </div>
+            </div>
+            <button className="btn-primary" onClick={async () => {
+              try {
+                await clientService.updateSettings({ currency });
+                alert('Preferences saved successfully!');
+              } catch (e) {
+                alert('Failed to save preferences.');
+              }
+            }}>Save Preferences</button>
+          </div>
+          
+          <div className="form-group">
+            <label className="form-label">DISPLAY CURRENCY</label>
+            <select 
+              className="glass-input" 
+              value={currency}
+              onChange={(e) => setCurrency(e.target.value)}
+            >
+              <option value="USD">US Dollar ($)</option>
+              <option value="PKR">Pakistani Rupee (Rs)</option>
+              <option value="EUR">Euro (€)</option>
+              <option value="GBP">British Pound (£)</option>
+              <option value="INR">Indian Rupee (₹)</option>
+              <option value="AED">UAE Dirham (د.إ)</option>
+              <option value="AUD">Australian Dollar (A$)</option>
+              <option value="CAD">Canadian Dollar (C$)</option>
+            </select>
+            <p className="text-muted" style={{ fontSize: '0.8rem', marginTop: '0.5rem' }}>
+              This currency will be used to format all financial figures across your dashboard, leads, and commissions.
+            </p>
+          </div>
+        </div>
+
       </div>
     </div>
   );

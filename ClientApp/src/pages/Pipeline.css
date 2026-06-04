@@ -1,0 +1,142 @@
+.pipeline-page {
+  padding: 0.5rem 1.5rem 1rem 1.5rem;
+  height: calc(100vh - 70px); /* Account for top header to prevent full page scroll */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* Prevent page-level scroll */
+}
+
+.pipeline-header {
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.pipeline-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin: 0;
+}
+
+.pipeline-board {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 0.5rem;
+  flex: 1;
+}
+
+.pipeline-column {
+  flex: 1;
+  min-width: 220px;
+  background-color: #f4f6f8;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e2e8f0;
+}
+
+.pipeline-column-header {
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  border-bottom: 1px solid #e2e8f0;
+  flex-shrink: 0;
+}
+
+.pipeline-column-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pipeline-column-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pipeline-column-count {
+  background-color: #e2e8f0;
+  color: #475569;
+  font-size: 0.7rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.pipeline-column-value {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #10b981; /* Green color for money */
+}
+
+.pipeline-cards {
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Custom scrollbar for cards area */
+.pipeline-cards::-webkit-scrollbar {
+  width: 4px;
+}
+.pipeline-cards::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 4px;
+}
+
+.pipeline-card {
+  background: white;
+  border-radius: 6px;
+  padding: 0.75rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.pipeline-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+  border-color: #cbd5e1;
+}
+
+.pipeline-card-title {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 0.85rem;
+  line-height: 1.2;
+}
+
+.pipeline-card-service {
+  font-size: 0.75rem;
+  color: #64748b;
+  line-height: 1.2;
+}
+
+.pipeline-card-value {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #10b981;
+  margin-top: 0.25rem;
+}
+
+.pipeline-card-assigned {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  margin-top: 0.15rem;
+}

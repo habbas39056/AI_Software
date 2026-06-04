@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { adminService } from '../services/api';
 import { 
   User, 
@@ -21,8 +21,11 @@ import './AddCustomer.css';
 
 const AddCustomer: React.FC = () => {
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  const isEditing = !!id;
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [initialFetch, setInitialFetch] = useState(isEditing);
   const [formData, setFormData] = useState({
     name: '',
     businessEntity: '',
@@ -36,6 +39,36 @@ const AddCustomer: React.FC = () => {
     n8nWebhookUrl: '',
     initialKnowledge: ''
   });
+
+  React.useEffect(() => {
+    if (isEditing && id) {
+      const fetchCustomer = async () => {
+        try {
+          const response = await adminService.getCustomerDetails(id);
+          const customer = response.customer;
+          setFormData({
+            name: customer.name || '',
+            businessEntity: customer.businessEntity || '',
+            email: customer.email || '',
+            whatsAppNumber: customer.whatsAppNumber || '',
+            password: customer.password || '',
+            subscriptionDays: customer.subscriptionDays || 30,
+            monthlyFee: customer.monthlyFee || 14000,
+            instanceName: customer.instanceName || '',
+            configApiKey: customer.configApiKey || '',
+            n8nWebhookUrl: customer.n8nWebhookUrl || '',
+            initialKnowledge: customer.initialKnowledge || ''
+          });
+        } catch (err) {
+          console.error('Failed to load customer', err);
+          alert('Failed to load customer details');
+        } finally {
+          setInitialFetch(false);
+        }
+      };
+      fetchCustomer();
+    }
+  }, [id, isEditing]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -62,48 +95,63 @@ const AddCustomer: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await adminService.addCustomer(formData);
+      if (isEditing && id) {
+        await adminService.updateCustomer(id, formData);
+      } else {
+        await adminService.addCustomer(formData);
+      }
       navigate('/clients');
     } catch (error: any) {
-      console.error('Failed to add customer:', error);
-      const msg = error.response?.data?.message || error.message || 'Failed to onboard client.';
+      console.error('Failed to save customer:', error);
+      const msg = error.response?.data?.message || error.message || 'Failed to save client.';
       alert('Error: ' + msg);
     } finally {
       setLoading(false);
     }
   };
 
+  if (initialFetch) return <div className="loading">Loading client data...</div>;
+
   return (
     <div className="add-customer-page">
-      <div className="step-indicator">
-        <span className="step-badge">Step {step} of 3</span>
-      </div>
+      {!isEditing ? (
+        <>
+          <div className="step-indicator">
+            <span className="step-badge">Step {step} of 3</span>
+          </div>
 
-      <div className="stepper-header">
-        <div className={`step-item ${step >= 1 ? 'active' : ''} ${step > 1 ? 'completed' : ''}`}>
-          <div className="step-circle">
-            {step > 1 ? <Check size={20} /> : <span>1</span>}
+          <div className="stepper-header">
+            <div className={`step-item ${step >= 1 ? 'active' : ''} ${step > 1 ? 'completed' : ''}`}>
+              <div className="step-circle">
+                {step > 1 ? <Check size={20} /> : <span>1</span>}
+              </div>
+              <div className="step-label">CLIENT IDENTITY</div>
+            </div>
+            <div className={`step-item ${step >= 2 ? 'active' : ''} ${step > 2 ? 'completed' : ''}`}>
+              <div className="step-circle">
+                {step > 2 ? <Check size={20} /> : <span>2</span>}
+              </div>
+              <div className="step-label">TECHNICAL CONFIG</div>
+            </div>
+            <div className={`step-item ${step >= 3 ? 'active' : ''}`}>
+              <div className="step-circle">
+                <span>3</span>
+              </div>
+              <div className="step-label">INITIAL KNOWLEDGE</div>
+            </div>
           </div>
-          <div className="step-label">CLIENT IDENTITY</div>
+        </>
+      ) : (
+        <div className="page-header mb-2" style={{ textAlign: 'center', display: 'block' }}>
+          <h1 className="page-title">Edit Client Details</h1>
+          <p className="page-subtitle">Update configuration and identity for this client.</p>
         </div>
-        <div className={`step-item ${step >= 2 ? 'active' : ''} ${step > 2 ? 'completed' : ''}`}>
-          <div className="step-circle">
-            {step > 2 ? <Check size={20} /> : <span>2</span>}
-          </div>
-          <div className="step-label">TECHNICAL CONFIG</div>
-        </div>
-        <div className={`step-item ${step >= 3 ? 'active' : ''}`}>
-          <div className="step-circle">
-            <span>3</span>
-          </div>
-          <div className="step-label">INITIAL KNOWLEDGE</div>
-        </div>
-      </div>
+      )}
 
       <div className="form-container">
         <form onSubmit={handleSubmit}>
-          {step === 1 && (
-            <div className="step-content">
+          {(step === 1 || isEditing) && (
+            <div className="step-content mb-2">
 
 
               <div className="section-header">
@@ -226,17 +274,23 @@ const AddCustomer: React.FC = () => {
                   </div>
                 </div>
 
-                <button type="button" className="btn-dark-full" onClick={handleNext}>
-                  Continue to Config <ChevronRight size={18} />
-                </button>
+                {!isEditing && (
+                  <button type="button" className="btn-dark-full" onClick={handleNext}>
+                    Continue to Config <ChevronRight size={18} />
+                  </button>
+                )}
               </div>
             </div>
           )}
 
-          {step === 2 && (
-            <div className="step-content">
-              <h1 className="step-title text-center">Technical Configuration</h1>
-              <p className="step-subtitle text-center">Configure the connection between your instance and the automation engine.</p>
+          {(step === 2 || isEditing) && (
+            <div className="step-content mb-2">
+              {!isEditing && (
+                <>
+                  <h1 className="step-title text-center">Technical Configuration</h1>
+                  <p className="step-subtitle text-center">Configure the connection between your instance and the automation engine.</p>
+                </>
+              )}
 
               <div className="white-box mt-2">
                 <div className="config-section">
@@ -287,22 +341,28 @@ const AddCustomer: React.FC = () => {
 
 
 
-                <div className="button-group spread">
-                  <button type="button" className="btn-secondary" onClick={handleBack}>
-                    <ChevronLeft size={18} /> Back
-                  </button>
-                  <button type="button" className="btn-dark" onClick={handleNext}>
-                    Continue to Knowledge <ChevronRight size={18} />
-                  </button>
-                </div>
+                {!isEditing && (
+                  <div className="button-group spread">
+                    <button type="button" className="btn-secondary" onClick={handleBack}>
+                      <ChevronLeft size={18} /> Back
+                    </button>
+                    <button type="button" className="btn-dark" onClick={handleNext}>
+                      Continue to Knowledge <ChevronRight size={18} />
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           )}
 
-          {step === 3 && (
+          {(step === 3 || isEditing) && (
             <div className="step-content">
-              <h1 className="step-title text-center">Initial Base Knowledge</h1>
-              <p className="step-subtitle text-center">Paste the company FAQs and capabilities to initialize the AI's brain.</p>
+              {!isEditing && (
+                <>
+                  <h1 className="step-title text-center">Initial Base Knowledge</h1>
+                  <p className="step-subtitle text-center">Paste the company FAQs and capabilities to initialize the AI's brain.</p>
+                </>
+              )}
 
               <div className="white-box mt-2">
                 <div className="form-group">
@@ -318,12 +378,20 @@ const AddCustomer: React.FC = () => {
                 </div>
 
                 <div className="button-group spread">
-                  <button type="button" className="btn-secondary" onClick={handleBack}>
-                    <ChevronLeft size={18} /> Back
-                  </button>
-                  <button type="submit" className="btn-dark" disabled={loading}>
-                    {loading ? 'Processing...' : 'Finalize & Create Tenant'}
-                  </button>
+                  {!isEditing ? (
+                    <>
+                      <button type="button" className="btn-secondary" onClick={handleBack}>
+                        <ChevronLeft size={18} /> Back
+                      </button>
+                      <button type="submit" className="btn-dark" disabled={loading}>
+                        {loading ? 'Processing...' : 'Finalize & Create Tenant'}
+                      </button>
+                    </>
+                  ) : (
+                    <button type="submit" className="btn-dark w-full" disabled={loading}>
+                      {loading ? 'Saving Changes...' : 'Save Changes'}
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

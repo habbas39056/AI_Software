@@ -27,6 +27,26 @@ const Agent = sequelize.define('Agent', {
     defaultValue: 'offline',
     field: 'Status'
   },
+  scheduleEnabled: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    field: 'ScheduleEnabled'
+  },
+  scheduleStartTime: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    field: 'ScheduleStartTime'
+  },
+  scheduleEndTime: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    field: 'ScheduleEndTime'
+  },
+  timezone: {
+    type: DataTypes.STRING,
+    defaultValue: 'UTC',
+    field: 'Timezone'
+  },
 }, {
   tableName: 'Agents',
   timestamps: false,

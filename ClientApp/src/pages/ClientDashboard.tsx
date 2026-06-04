@@ -1,14 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { clientService } from '../services/api';
 import { 
-  MessageSquare, 
-  Users, 
+  MessageSquare,
+  Users,
   Clock, 
-  BookOpen, 
+  DollarSign, 
+  CalendarClock,
   AlertTriangle,
   Activity
 } from 'lucide-react';
-import './Dashboard.css'; // Reuse dashboard styles
+import RecentWins from '../components/RecentWins';
+import FollowUpsWidget from '../components/FollowUpsWidget';
+import GoalProgressBar from '../components/GoalProgressBar';
+import { formatCurrency } from '../utils/currencyUtils';
+import './Dashboard.css';
 
 const ClientDashboard: React.FC = () => {
   const [data, setData] = useState<any>(null);
@@ -28,8 +33,6 @@ const ClientDashboard: React.FC = () => {
   useEffect(() => {
     fetchData();
   }, []);
-
-
 
   const chartData = React.useMemo(() => {
     if (!data?.customer?.leads || data.customer.leads.length === 0) return [];
@@ -74,6 +77,7 @@ const ClientDashboard: React.FC = () => {
   }, [data?.customer?.leads]);
 
   if (loading) return <div className="loading">Loading Client Dashboard...</div>;
+  if (!data) return <div className="loading">Error: Could not load dashboard data.</div>;
   if (data?.blocked) return (
     <div className="locked-screen">
       <AlertTriangle size={64} className="text-danger mb-2" />
@@ -83,7 +87,7 @@ const ClientDashboard: React.FC = () => {
   );
 
   const { customer, stats } = data;
-  const isUrgent = stats.daysLeft <= 7;
+  const isUrgent = stats?.daysLeft <= 7;
 
 
   return (
@@ -100,7 +104,7 @@ const ClientDashboard: React.FC = () => {
         </div>
       )}
 
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem', gap: '1rem', alignItems: 'center' }}>
         {stats.alertLevel !== 'none' && (
           <div className={`alert-badge ${stats.alertLevel}`}>
             <Clock size={16} />
@@ -126,19 +130,21 @@ const ClientDashboard: React.FC = () => {
         </div>
         <div className="stat-card orange">
           <div className="stat-header">
-            <h3 className="stat-title">Hours Saved</h3>
-            <Clock size={20} className="stat-icon" />
+            <h3 className="stat-title">Deal Value</h3>
+            <DollarSign size={20} className="stat-icon" />
           </div>
-          <p className="stat-value">{stats.hoursSaved}h</p>
+          <p className="stat-value">{formatCurrency(stats.totalDealValue || 0, data?.customer?.currency)}</p>
         </div>
         <div className="stat-card purple">
           <div className="stat-header">
-            <h3 className="stat-title">Bot Articles</h3>
-            <BookOpen size={20} className="stat-icon" />
+            <h3 className="stat-title">Follow-ups</h3>
+            <CalendarClock size={20} className="stat-icon" />
           </div>
-          <p className="stat-value">{stats.articlesCount}</p>
+          <p className="stat-value">{stats.followUpsCount}</p>
         </div>
       </div>
+
+      <GoalProgressBar target={stats.monthlyGoal || 0} received={stats.receivedAmount || 0} currency={data?.customer?.currency} />
 
       <div className="main-grid mt-2">
         <div className="white-box">
@@ -227,6 +233,14 @@ const ClientDashboard: React.FC = () => {
           </div>
         </div>
 
+      </div>
+
+      <div className="main-wrapper mt-2">
+        {/* Follow-ups Due Widget */}
+        <FollowUpsWidget leads={data?.customer?.leads || []} />
+        
+        {/* Recent Wins Widget */}
+        <RecentWins leads={data?.customer?.leads || []} />
       </div>
     </div>
   );

@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Users, UserPlus, MessageSquare, CreditCard, ArrowUpRight } from 'lucide-react';
-import { adminService } from '../services/api';
+import { adminService, leadsService } from '../services/api';
+import RecentWins from '../components/RecentWins';
+import FollowUpsWidget from '../components/FollowUpsWidget';
 import './Dashboard.css';
 
 const Dashboard: React.FC = () => {
@@ -12,8 +14,11 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const dashboardData = await adminService.getDashboardData();
-        setData(dashboardData);
+        const [dashboardData, allLeads] = await Promise.all([
+          adminService.getDashboardData(),
+          leadsService.getAllLeads().catch(() => [])
+        ]);
+        setData({ ...dashboardData, leads: allLeads });
       } catch (error: any) {
         console.error('Failed to fetch dashboard data:', error);
         if (error.response?.status === 401) {
@@ -157,6 +162,12 @@ const Dashboard: React.FC = () => {
             </button>
           </div>
         </div>
+        
+        {/* Follow-ups Widget */}
+        <FollowUpsWidget leads={data.leads || []} />
+
+        {/* Recent Wins Widget */}
+        <RecentWins leads={data.leads || []} />
       </div>
     </div>
   );

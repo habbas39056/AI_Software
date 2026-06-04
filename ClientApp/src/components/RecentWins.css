@@ -1,0 +1,58 @@
+.recent-wins-widget {
+  display: flex;
+  flex-direction: column;
+}
+
+.recent-wins-icon {
+  margin-right: 8px;
+}
+
+.recent-wins-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.recent-win-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 12px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.recent-win-item:last-child {
+  border-bottom: none;
+}
+
+.recent-win-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #10b981;
+  margin-top: 6px;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.recent-win-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.recent-win-name {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 0.9rem;
+}
+
+.recent-win-meta {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.recent-wins-empty {
+  color: #94a3b8;
+  font-size: 0.85rem;
+  padding: 16px 0;
+  text-align: center;
+}

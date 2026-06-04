@@ -9,6 +9,7 @@ const clientRoutes = require('./routes/clientRoutes');
 const knowledgeRoutes = require('./routes/knowledgeRoutes');
 const leadsRoutes = require('./routes/leadsRoutes');
 const evolutionRoutes = require('./routes/evolutionRoutes');
+const teamRoutes = require('./routes/teamRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -25,6 +26,7 @@ app.use('/api/client', clientRoutes);
 app.use('/api/knowledge', knowledgeRoutes);
 app.use('/api/leads', leadsRoutes);
 app.use('/api/evolution', evolutionRoutes);
+app.use('/api/team', teamRoutes);
 
 // Serve Static Uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -34,11 +36,43 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Returns { active: true/false }
 const { Agent } = require('./models');
 
+function isAgentScheduledOn(agent) {
+  if (!agent.scheduleEnabled) return true;
+  if (!agent.scheduleStartTime || !agent.scheduleEndTime) return true;
+  
+  try {
+    const tz = agent.timezone || 'UTC';
+    const formatter = new Intl.DateTimeFormat('en-US', { 
+      timeZone: tz, 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      hourCycle: 'h23' 
+    });
+    const currentTime = formatter.format(new Date()); 
+    
+    const start = agent.scheduleStartTime;
+    const end = agent.scheduleEndTime;
+    
+    if (start < end) {
+      return currentTime >= start && currentTime <= end;
+    } else {
+      return currentTime >= start || currentTime <= end;
+    }
+  } catch (e) {
+    console.error('Error calculating schedule:', e);
+    return true; 
+  }
+}
+
 app.get('/api/agent-status/:instanceName', async (req, res) => {
   try {
     const agent = await Agent.findOne({ where: { instanceName: req.params.instanceName } });
     if (!agent) return res.json({ active: false, reason: 'Agent not found' });
-    res.json({ active: agent.isActive });
+    
+    if (!agent.isActive) return res.json({ active: false, reason: 'Agent is manually paused' });
+    if (!isAgentScheduledOn(agent)) return res.json({ active: false, reason: 'Outside of scheduled hours' });
+    
+    res.json({ active: true });
   } catch (error) {
     console.error('Agent status check error:', error);
     res.json({ active: false, reason: 'Error checking status' });
@@ -66,6 +100,11 @@ app.post('/api/webhook-proxy/:instanceName', async (req, res) => {
       return res.status(200).json({ status: 'paused', reason: 'Agent is paused' });
     }
 
+    if (!isAgentScheduledOn(agent)) {
+      console.log(`[Webhook Proxy] Agent "${instanceName}" is OUTSIDE SCHEDULED HOURS — message NOT forwarded.`);
+      return res.status(200).json({ status: 'paused', reason: 'Outside of scheduled hours' });
+    }
+
     // 3. Find the customer's n8n webhook URL
     const customer = await Customer.findOne({ where: { whatsAppNumber: agent.customerId } });
     if (!customer || !customer.n8nWebhookUrl) {
@@ -91,7 +130,7 @@ app.post('/api/webhook-proxy/:instanceName', async (req, res) => {
 app.use(express.static(path.join(__dirname, '../ClientApp/dist')));
 
 // SPA Fallback (Redirect all other routes to index.html)
-app.get('{*path}', (req, res) => {
+app.get('/{*path}', (req, res) => {
   res.sendFile(path.join(__dirname, '../ClientApp/dist/index.html'));
 });
 

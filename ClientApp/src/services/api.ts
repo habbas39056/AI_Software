@@ -69,12 +69,25 @@ export const knowledgeService = {
     const response = await api.get(`/knowledge/${customerId}`);
     return response.data;
   },
-  createKnowledge: async (data: any) => {
-    const response = await api.post('/knowledge', data);
+  createKnowledge: async (data: any, file?: File) => {
+    const formData = new FormData();
+    formData.append('customerId', data.customerId);
+    formData.append('topic', data.topic);
+    if (data.content) formData.append('content', data.content);
+    if (file) formData.append('file', file);
+    const response = await api.post('/knowledge', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
     return response.data;
   },
-  updateKnowledge: async (id: number, data: any) => {
-    const response = await api.put(`/knowledge/${id}`, data);
+  updateKnowledge: async (id: number, data: any, file?: File) => {
+    const formData = new FormData();
+    formData.append('topic', data.topic);
+    if (data.content) formData.append('content', data.content);
+    if (file) formData.append('file', file);
+    const response = await api.put(`/knowledge/${id}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
     return response.data;
   },
   deleteKnowledge: async (id: number) => {
@@ -84,14 +97,46 @@ export const knowledgeService = {
 };
 
 export const leadsService = {
+  getAllLeads: async () => {
+    const response = await api.get('/leads/all');
+    return response.data;
+  },
   getLeads: async (customerId: string) => {
     const response = await api.get(`/leads/${customerId}`);
+    return response.data;
+  },
+  getLead: async (id: number) => {
+    const response = await api.get(`/leads/detail/${id}`);
     return response.data;
   },
   createLead: async (data: any) => {
     const response = await api.post('/leads', data);
     return response.data;
-  }
+  },
+  updateLead: async (id: number, data: any) => {
+    const response = await api.put(`/leads/${id}`, data);
+    return response.data;
+  },
+  deleteLead: async (id: number) => {
+    const response = await api.delete(`/leads/${id}`);
+    return response.data;
+  },
+  logActivity: async (leadId: number, data: { type: string; note: string; newFollowUpDate?: string }) => {
+    const response = await api.post(`/leads/${leadId}/activity`, data);
+    return response.data;
+  },
+  getActivities: async (leadId: number) => {
+    const response = await api.get(`/leads/${leadId}/activities`);
+    return response.data;
+  },
+  recordPayment: async (leadId: number, data: { amount: number; date: string; note?: string }) => {
+    const response = await api.post(`/leads/${leadId}/payment`, data);
+    return response.data;
+  },
+  deletePayment: async (paymentId: number) => {
+    const response = await api.delete(`/leads/payment/${paymentId}`);
+    return response.data;
+  },
 };
 
 export const authService = {
@@ -134,7 +179,7 @@ export const clientService = {
     return response.data;
   },
   updateSettings: async (settings: any) => {
-    const response = await api.post('/client/settings', settings);
+    const response = await api.put('/client/settings', settings);
     return response.data;
   },
 };
@@ -154,6 +199,37 @@ export const evolutionService = {
   },
   logout: async (instanceName: string) => {
     const response = await api.post(`/evolution/logout/${instanceName}`);
+    return response.data;
+  },
+};
+
+export const teamService = {
+  getMembers: async () => {
+    const response = await api.get('/team');
+    return response.data;
+  },
+  getCommissions: async () => {
+    const response = await api.get('/team/commissions');
+    return response.data;
+  },
+  getMember: async (id: number) => {
+    const response = await api.get(`/team/${id}`);
+    return response.data;
+  },
+  createMember: async (data: any) => {
+    const response = await api.post('/team', data);
+    return response.data;
+  },
+  updateMember: async (id: number, data: any) => {
+    const response = await api.put(`/team/${id}`, data);
+    return response.data;
+  },
+  toggleMember: async (id: number) => {
+    const response = await api.patch(`/team/${id}/toggle`);
+    return response.data;
+  },
+  deleteMember: async (id: number) => {
+    const response = await api.delete(`/team/${id}`);
     return response.data;
   },
 };

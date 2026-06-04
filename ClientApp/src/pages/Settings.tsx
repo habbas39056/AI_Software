@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { clientService, evolutionService } from '../services/api';
-import { Zap, Loader2, Pause, Play, Smartphone } from 'lucide-react';
+import { Zap, Loader2, Smartphone } from 'lucide-react';
 import './Settings.css';
 
 const Settings: React.FC = () => {
@@ -9,6 +9,13 @@ const Settings: React.FC = () => {
   const [qrLoading, setQrLoading] = useState(false);
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [status, setStatus] = useState<'open' | 'close' | 'connecting' | 'unknown'>('unknown');
+  
+  // Scheduling state
+  const [scheduleEnabled, setScheduleEnabled] = useState(false);
+  const [scheduleStartTime, setScheduleStartTime] = useState('09:00');
+  const [scheduleEndTime, setScheduleEndTime] = useState('17:00');
+  const [timezone, setTimezone] = useState('UTC');
+  const [savingSchedule, setSavingSchedule] = useState(false);
   const fetchStatus = async (instance: string) => {
     try {
       const resp = await evolutionService.getStatus(instance);
@@ -24,6 +31,14 @@ const Settings: React.FC = () => {
       setData(resp || {});
       const inst = resp?.agents?.[0]?.instanceName;
       if (inst) fetchStatus(inst);
+      
+      const agent = resp?.agents?.[0];
+      if (agent) {
+        setScheduleEnabled(agent.scheduleEnabled || false);
+        setScheduleStartTime(agent.scheduleStartTime || '09:00');
+        setScheduleEndTime(agent.scheduleEndTime || '17:00');
+        setTimezone(agent.timezone || 'UTC');
+      }
     } catch (error) {
       console.error('Failed to fetch settings:', error);
     } finally {
@@ -54,13 +69,21 @@ const Settings: React.FC = () => {
     }
   };
 
-  const handleToggleAgent = async () => {
-    const active = data.agents?.[0]?.isActive;
+  const handleSaveSchedule = async () => {
+    setSavingSchedule(true);
     try {
-      await clientService.toggleAgent(!active);
+      await clientService.updateSettings({
+        scheduleEnabled,
+        scheduleStartTime,
+        scheduleEndTime,
+        timezone
+      });
+      alert('Schedule saved successfully!');
       fetchData();
-    } catch (error) {
-      alert('Failed to update agent status.');
+    } catch (e) {
+      alert('Failed to save schedule.');
+    } finally {
+      setSavingSchedule(false);
     }
   };
 
@@ -94,7 +117,7 @@ const Settings: React.FC = () => {
       {/* ── Settings Grid ── */}
       <div className="settings-grid">
 
-        {/* Card 1: Active Agent Instances */}
+        {/* Card 1: Agent Scheduling */}
         <div className="settings-card">
           <div className="card-header">
             <div className="card-title-group">
@@ -102,27 +125,73 @@ const Settings: React.FC = () => {
                 <Smartphone size={20} />
               </div>
               <div>
-                <h2 className="card-title">Active Instances</h2>
-                <p className="card-subtitle">Manage your AI agent instances</p>
+                <h2 className="card-title">Agent Scheduling</h2>
+                <p className="card-subtitle">Set operating hours for your AI agent</p>
               </div>
             </div>
+            <button className="btn-primary" onClick={handleSaveSchedule} disabled={savingSchedule}>
+              {savingSchedule ? <Loader2 size={16} className="animate-spin" /> : 'Save Schedule'}
+            </button>
           </div>
 
-          <div className="instance-item">
-            <div className="instance-details">
-              <div className="instance-avatar">
-                {(agent?.instanceName || 'A').charAt(0)}
-              </div>
-              <div className="instance-meta">
-                <span className="instance-name">{agent?.instanceName || 'Primary Agent'}</span>
-                <span className={`instance-status ${status === 'open' ? 'online' : 'offline'}`}>
-                  {status === 'open' ? 'Connected' : status.toUpperCase()}
-                </span>
-              </div>
+          {agent?.scheduleEnabled && (
+            <div style={{ background: '#f0f9ff', borderBottom: '1px solid #e0f2fe', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#0ea5e9' }}></div>
+              <span style={{ fontSize: '0.9rem', color: '#0369a1', fontWeight: 500 }}>
+                Active Schedule: <strong style={{ color: '#0284c7' }}>{agent.scheduleStartTime} - {agent.scheduleEndTime}</strong> ({agent.timezone})
+              </span>
             </div>
-            <button className={`btn-toggle-agent ${agent?.isActive ? 'pause' : 'resume'}`} onClick={handleToggleAgent}>
-              {agent?.isActive ? <><Pause size={14} /> Pause</> : <><Play size={14} /> Resume</>}
-            </button>
+          )}
+
+          <div className="schedule-form" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <input 
+                type="checkbox" 
+                id="scheduleEnabled" 
+                checked={scheduleEnabled} 
+                onChange={e => setScheduleEnabled(e.target.checked)} 
+                style={{ width: '18px', height: '18px', accentColor: '#3b82f6' }}
+              />
+              <label htmlFor="scheduleEnabled" style={{ color: '#111827', fontSize: '1rem', fontWeight: 500, cursor: 'pointer' }}>Enable Automatic Scheduling</label>
+            </div>
+
+            {scheduleEnabled && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px', marginTop: '10px' }}>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label style={{ fontSize: '0.85rem', color: '#4b5563', marginBottom: '5px', display: 'block', fontWeight: 500 }}>Timezone</label>
+                  <select 
+                    value={timezone} 
+                    onChange={e => setTimezone(e.target.value)}
+                    style={{ width: '100%', padding: '10px', borderRadius: '8px', background: '#f9fafb', border: '1px solid #d1d5db', color: '#111827', fontWeight: 500 }}
+                  >
+                    <option value="UTC">UTC</option>
+                    <option value="America/New_York">EST (New York)</option>
+                    <option value="America/Los_Angeles">PST (Los Angeles)</option>
+                    <option value="Europe/London">GMT (London)</option>
+                    <option value="Asia/Karachi">PKT (Karachi)</option>
+                    <option value="Asia/Dubai">GST (Dubai)</option>
+                  </select>
+                </div>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label style={{ fontSize: '0.85rem', color: '#4b5563', marginBottom: '5px', display: 'block', fontWeight: 500 }}>Start Time (HH:MM)</label>
+                  <input 
+                    type="time" 
+                    value={scheduleStartTime} 
+                    onChange={e => setScheduleStartTime(e.target.value)}
+                    style={{ width: '100%', padding: '10px', borderRadius: '8px', background: '#f9fafb', border: '1px solid #d1d5db', color: '#111827', fontWeight: 500 }}
+                  />
+                </div>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label style={{ fontSize: '0.85rem', color: '#4b5563', marginBottom: '5px', display: 'block', fontWeight: 500 }}>End Time (HH:MM)</label>
+                  <input 
+                    type="time" 
+                    value={scheduleEndTime} 
+                    onChange={e => setScheduleEndTime(e.target.value)}
+                    style={{ width: '100%', padding: '10px', borderRadius: '8px', background: '#f9fafb', border: '1px solid #d1d5db', color: '#111827', fontWeight: 500 }}
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -160,7 +229,6 @@ const Settings: React.FC = () => {
             )}
           </div>
         </div>
-
       </div>
     </div>
   );
