@@ -29,7 +29,14 @@ router.get('/all', async (req, res) => {
       ],
       order: [['lastMessageAt', 'DESC']]
     });
-    res.json(leads);
+    const seenPhones = new Set();
+    const uniqueLeads = leads.filter(l => {
+      if (!l.phoneNumber) return true;
+      if (seenPhones.has(l.phoneNumber)) return false;
+      seenPhones.add(l.phoneNumber);
+      return true;
+    });
+    res.json(uniqueLeads);
   } catch (error) {
     console.error('Error fetching all leads:', error);
     res.status(500).json({ message: 'Error fetching all leads' });
@@ -60,7 +67,14 @@ router.get('/:customerId', async (req, res) => {
       ],
       order: [['lastMessageAt', 'DESC']]
     });
-    res.json(leads);
+    const seenPhones = new Set();
+    const uniqueLeads = leads.filter(l => {
+      if (!l.phoneNumber) return true;
+      if (seenPhones.has(l.phoneNumber)) return false;
+      seenPhones.add(l.phoneNumber);
+      return true;
+    });
+    res.json(uniqueLeads);
   } catch (error) {
     console.error('Error fetching leads:', error);
     res.status(500).json({ message: 'Error fetching leads' });
