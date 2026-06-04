@@ -41,8 +41,14 @@ const ClientDashboard: React.FC = () => {
 
     const dataMap: Record<string, number> = {};
     let minDate = new Date();
+    const seenPhones = new Set<string>();
     
     data.customer.leads.forEach((l: any) => {
+      if (l.phoneNumber) {
+        if (seenPhones.has(l.phoneNumber)) return;
+        seenPhones.add(l.phoneNumber);
+      }
+
       const rawDate = l.lastMessageAt || l.LastMessageAt || l.createdAt || l.CreatedAt || new Date().toISOString();
       const d = new Date(rawDate);
       if (isNaN(d.getTime())) return; // skip invalid dates

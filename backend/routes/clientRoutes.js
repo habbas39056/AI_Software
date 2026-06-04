@@ -60,7 +60,11 @@ router.get('/dashboard', authenticate, async (req, res) => {
     });
 
     const daysLeft = customer.subscriptionExpiry ? Math.max(0, Math.ceil((new Date(customer.subscriptionExpiry) - new Date()) / (1000 * 60 * 60 * 24))) : 0;
-    const leadsCount = dashboardLeads.length;
+    
+    const uniquePhoneNumbers = new Set(dashboardLeads.map(l => l.phoneNumber).filter(Boolean));
+    const leadsWithNoPhone = dashboardLeads.filter(l => !l.phoneNumber).length;
+    const leadsCount = uniquePhoneNumbers.size + leadsWithNoPhone;
+
     const totalDealValue = dashboardLeads.reduce((sum, l) => sum + (parseFloat(l.dealValue) || 0), 0);
     const followUpsCount = dashboardLeads.filter(l => l.followUpDate).length;
 

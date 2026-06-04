@@ -86,6 +86,31 @@ router.get('/detail/:id', async (req, res) => {
 // CREATE lead
 router.post('/', async (req, res) => {
   try {
+    const { phoneNumber, customerId, summary, name } = req.body;
+    
+    // Check if a lead with this phone number already exists for this customer
+    if (phoneNumber && customerId) {
+      let existingLead = await Lead.findOne({ where: { phoneNumber, customerId } });
+      
+      if (existingLead) {
+        const updatedFields = { lastMessageAt: new Date() };
+        
+        if (summary) {
+          updatedFields.summary = summary; // Update with latest summary
+        }
+        if (name && (!existingLead.name || existingLead.name.trim() === '')) {
+          updatedFields.name = name;
+        }
+
+        await existingLead.update(updatedFields);
+        
+        const result = existingLead.toJSON();
+        result.activities = [];
+        result.payments = [];
+        return res.status(200).json(result);
+      }
+    }
+
     const lead = await Lead.create({
       ...req.body,
       lastMessageAt: new Date(),
