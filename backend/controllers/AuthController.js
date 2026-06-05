@@ -136,7 +136,7 @@ exports.uploadProfileImage = async (req, res) => {
       return res.status(400).json({ message: 'No image file provided' });
     }
     
-    const imageUrl = `/uploads/${req.file.filename}`;
+    const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
     
     if (req.user.role === 'Super Admin') {
       updateEnv({ ADMIN_PROFILE_IMAGE: imageUrl });

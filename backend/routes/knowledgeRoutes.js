@@ -57,7 +57,7 @@ router.post('/', upload.single('file'), async (req, res) => {
     };
 
     if (req.file) {
-      data.fileUrl = `/uploads/${req.file.filename}`;
+      data.fileUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
       data.fileType = getFileType(req.file.originalname);
     }
 
@@ -88,7 +88,7 @@ router.put('/:id', upload.single('file'), async (req, res) => {
     };
 
     if (req.file) {
-      updateData.fileUrl = `/uploads/${req.file.filename}`;
+      updateData.fileUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
       updateData.fileType = getFileType(req.file.originalname);
     }
 
