@@ -167,8 +167,13 @@ router.post('/', async (req, res) => {
 // UPDATE lead
 router.put('/:id', async (req, res) => {
   try {
-    const { name, businessName, phoneNumber, email, service, dealValue, status, assignedTo, followUpDate, city, lossReason, summary, score, isPaused } = req.body;
+    let { name, businessName, phoneNumber, email, service, dealValue, status, assignedTo, followUpDate, city, lossReason, summary, score, isPaused } = req.body;
     
+    // N8N fallback for capitalized keys
+    if (!summary && req.body.Summary) summary = req.body.Summary;
+    if (!name && req.body.Name) name = req.body.Name;
+    if (!status && req.body.Status) status = req.body.Status;
+
     const existingLead = await Lead.findByPk(req.params.id);
     if (!existingLead) return res.status(404).json({ message: 'Lead not found' });
 
