@@ -47,8 +47,8 @@ router.post('/', upload.single('image'), (req, res) => {
       return res.status(400).json({ message: 'No file uploaded' });
     }
     
-    // Create the public URL path
-    const fileUrl = `/uploads/${req.file.filename}`;
+    // Create the full absolute public URL path
+    const fileUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
     
     // Return the URL so the frontend/n8n can save it
     res.status(200).json({ 
