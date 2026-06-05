@@ -233,7 +233,15 @@ const ClientDashboard: React.FC = () => {
                     <td style={{ maxWidth: '250px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={l.summary}>
                       {l.summary || 'No summary'}
                     </td>
-                    <td><span className="badge active">Engaged</span></td>
+                    <td>
+                      <span className={`badge ${
+                        l.status?.toLowerCase() === 'won' ? 'won' :
+                        l.status?.toLowerCase() === 'lost' ? 'lost' :
+                        'active'
+                      }`}>
+                        {l.status || 'Engaged'}
+                      </span>
+                    </td>
                   </tr>
                 ))}
                 {(!customer.leads || customer.leads.length === 0) && (
