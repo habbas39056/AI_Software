@@ -74,21 +74,51 @@ const Profile: React.FC = () => {
       <div className="settings-container mt-2">
         
         {/* Tab Navigation */}
-        <div className="flex border-b border-slate-200 mb-4 gap-6 px-2">
+        <div style={{ display: 'flex', borderBottom: '1px solid #e2e8f0', marginBottom: '1.5rem', gap: '2rem', padding: '0 0.5rem' }}>
           <button 
-            className={`pb-2 text-sm font-medium transition-colors ${activeTab === 'profile' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-slate-500 hover:text-slate-800'}`}
+            style={{ 
+              background: 'none', 
+              border: 'none', 
+              borderBottom: activeTab === 'profile' ? '2px solid #2563eb' : '2px solid transparent', 
+              padding: '0.5rem 0.5rem 0.75rem 0.5rem', 
+              fontSize: '0.95rem', 
+              fontWeight: 500, 
+              color: activeTab === 'profile' ? '#2563eb' : '#64748b',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
             onClick={() => setActiveTab('profile')}
           >
             Personal Details
           </button>
           <button 
-            className={`pb-2 text-sm font-medium transition-colors ${activeTab === 'services' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-slate-500 hover:text-slate-800'}`}
+            style={{ 
+              background: 'none', 
+              border: 'none', 
+              borderBottom: activeTab === 'services' ? '2px solid #2563eb' : '2px solid transparent', 
+              padding: '0.5rem 0.5rem 0.75rem 0.5rem', 
+              fontSize: '0.95rem', 
+              fontWeight: 500, 
+              color: activeTab === 'services' ? '#2563eb' : '#64748b',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
             onClick={() => setActiveTab('services')}
           >
             Custom Services
           </button>
           <button 
-            className={`pb-2 text-sm font-medium transition-colors ${activeTab === 'currency' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-slate-500 hover:text-slate-800'}`}
+            style={{ 
+              background: 'none', 
+              border: 'none', 
+              borderBottom: activeTab === 'currency' ? '2px solid #2563eb' : '2px solid transparent', 
+              padding: '0.5rem 0.5rem 0.75rem 0.5rem', 
+              fontSize: '0.95rem', 
+              fontWeight: 500, 
+              color: activeTab === 'currency' ? '#2563eb' : '#64748b',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
             onClick={() => setActiveTab('currency')}
           >
             Currency Options
