@@ -141,8 +141,27 @@ const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
 });
 
-sequelize.sync({ alter: true }).then(() => {
+sequelize.sync({ alter: true }).then(async () => {
   console.log('Database synced successfully');
+  
+  // Create a MySQL trigger to automatically increment MessageCount whenever Summary changes.
+  // This ensures the count increases even if N8N updates the DB directly bypassing the API.
+  try {
+    await sequelize.query('DROP TRIGGER IF EXISTS before_lead_summary_update;');
+    await sequelize.query(`
+      CREATE TRIGGER before_lead_summary_update 
+      BEFORE UPDATE ON Leads 
+      FOR EACH ROW 
+      BEGIN 
+        IF NEW.Summary != OLD.Summary OR (NEW.Summary IS NOT NULL AND OLD.Summary IS NULL) THEN 
+          SET NEW.MessageCount = IFNULL(OLD.MessageCount, 1) + 1; 
+        END IF; 
+      END;
+    `);
+    console.log('Summary tracking trigger applied successfully.');
+  } catch (err) {
+    console.log('Note: Could not create DB trigger (might not be supported in this SQL dialect):', err.message);
+  }
 }).catch(err => {
   console.error('Failed to sync database:', err.message);
 });
