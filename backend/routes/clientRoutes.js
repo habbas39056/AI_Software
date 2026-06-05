@@ -70,7 +70,10 @@ router.get('/dashboard', authenticate, async (req, res) => {
     const leadsWithNoPhone = dashboardLeads.filter(l => !l.phoneNumber).length;
     const leadsCount = uniquePhoneNumbers.size + leadsWithNoPhone;
 
-    const totalMessages = dashboardLeads.reduce((sum, l) => sum + (l.messageCount || 1), 0);
+    const totalMessages = dashboardLeads.reduce((sum, l) => {
+      const count = parseInt(l.messageCount);
+      return sum + (isNaN(count) ? 1 : count);
+    }, 0);
 
     const totalDealValue = dashboardLeads.reduce((sum, l) => sum + (parseFloat(l.dealValue) || 0), 0);
     const followUpsCount = dashboardLeads.filter(l => l.followUpDate).length;
