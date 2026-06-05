@@ -107,7 +107,10 @@ router.post('/', async (req, res) => {
       let existingLead = await Lead.findOne({ where: { phoneNumber, customerId } });
       
       if (existingLead) {
-        const updatedFields = { lastMessageAt: new Date() };
+        const updatedFields = { 
+          lastMessageAt: new Date(),
+          messageCount: (existingLead.messageCount || 1) + 1 
+        };
         
         if (summary) {
           updatedFields.summary = summary; // Update with latest summary

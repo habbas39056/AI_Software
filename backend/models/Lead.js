@@ -82,6 +82,11 @@ const Lead = sequelize.define('Lead', {
     defaultValue: false,
     field: 'IsPaused'
   },
+  messageCount: {
+    type: DataTypes.INTEGER,
+    defaultValue: 1,
+    field: 'MessageCount'
+  },
   lastMessageAt: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,

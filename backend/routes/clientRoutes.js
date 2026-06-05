@@ -65,6 +65,8 @@ router.get('/dashboard', authenticate, async (req, res) => {
     const leadsWithNoPhone = dashboardLeads.filter(l => !l.phoneNumber).length;
     const leadsCount = uniquePhoneNumbers.size + leadsWithNoPhone;
 
+    const totalMessages = dashboardLeads.reduce((sum, l) => sum + (l.messageCount || 1), 0);
+
     const totalDealValue = dashboardLeads.reduce((sum, l) => sum + (parseFloat(l.dealValue) || 0), 0);
     const followUpsCount = dashboardLeads.filter(l => l.followUpDate).length;
 
@@ -80,7 +82,7 @@ router.get('/dashboard', authenticate, async (req, res) => {
       stats: {
         daysLeft,
         alertLevel: daysLeft <= 3 ? 'critical' : daysLeft <= 10 ? 'warning' : 'none',
-        totalMessages: leadsCount,
+        totalMessages: totalMessages,
         leadsCaptured: leadsCount,
         totalDealValue,
         followUpsCount,
