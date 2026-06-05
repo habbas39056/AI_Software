@@ -33,7 +33,12 @@ router.get('/dashboard', authenticate, async (req, res) => {
     // Filter leads for TeamMember
     let dashboardLeads = customer.leads || [];
     if (req.user.role === 'TeamMember') {
-      dashboardLeads = dashboardLeads.filter(l => l.assignedTo === req.user.username || l.assignedTo === req.user.name);
+      dashboardLeads = dashboardLeads.filter(l => 
+        l.assignedTo === req.user.username || 
+        l.assignedTo === req.user.name || 
+        l.assignedTo === 'AI Agent' || 
+        !l.assignedTo
+      );
     }
     
     // Calculate Monthly Goal Progress

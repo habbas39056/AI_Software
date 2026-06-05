@@ -17,7 +17,10 @@ router.get('/all', async (req, res) => {
         customerId: req.user.customerId,
         [Op.or]: [
           { assignedTo: req.user.username },
-          { assignedTo: req.user.name }
+          { assignedTo: req.user.name },
+          { assignedTo: 'AI Agent' },
+          { assignedTo: null },
+          { assignedTo: '' }
         ]
       };
     }
@@ -54,7 +57,10 @@ router.get('/:customerId', async (req, res) => {
         ...whereClause,
         [Op.or]: [
           { assignedTo: req.user.username },
-          { assignedTo: req.user.name }
+          { assignedTo: req.user.name },
+          { assignedTo: 'AI Agent' },
+          { assignedTo: null },
+          { assignedTo: '' }
         ]
       };
     }
