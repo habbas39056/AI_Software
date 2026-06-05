@@ -168,8 +168,25 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { name, businessName, phoneNumber, email, service, dealValue, status, assignedTo, followUpDate, city, lossReason, summary, score, isPaused } = req.body;
+    
+    const existingLead = await Lead.findByPk(req.params.id);
+    if (!existingLead) return res.status(404).json({ message: 'Lead not found' });
+
+    let newMessageCount = existingLead.messageCount || 1;
+    let newLastMessageAt = existingLead.lastMessageAt;
+
+    // If summary is provided and is different from the existing summary, increment messageCount
+    if (summary && summary !== existingLead.summary) {
+      newMessageCount += 1;
+      newLastMessageAt = new Date();
+    }
+
     await Lead.update(
-      { name, businessName, phoneNumber, email, service, dealValue, status, assignedTo, followUpDate, city, lossReason, summary, score, isPaused },
+      { 
+        name, businessName, phoneNumber, email, service, dealValue, status, assignedTo, followUpDate, city, lossReason, summary, score, isPaused,
+        messageCount: newMessageCount,
+        lastMessageAt: newLastMessageAt
+      },
       { where: { id: req.params.id } }
     );
     const updated = await Lead.findByPk(req.params.id, {
