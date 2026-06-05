@@ -47,6 +47,11 @@ const Agent = sequelize.define('Agent', {
     defaultValue: 'UTC',
     field: 'Timezone'
   },
+  totalMessages: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
+    field: 'TotalMessages'
+  },
 }, {
   tableName: 'Agents',
   timestamps: false,
