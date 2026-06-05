@@ -6,6 +6,8 @@ import './Profile.css';
 const Profile: React.FC = () => {
   const [profile, setProfile] = useState({ name: '', email: '', password: '', profileImage: '' });
   const [currency, setCurrency] = useState('USD');
+  const [customServices, setCustomServices] = useState<string[]>([]);
+  const [newService, setNewService] = useState('');
   const [updatingProfile, setUpdatingProfile] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -20,6 +22,7 @@ const Profile: React.FC = () => {
         ]);
         setProfile({ name: userResp.name || '', email: userResp.email || '', password: '', profileImage: userResp.profileImage || '' });
         if (settingsResp?.currency) setCurrency(settingsResp.currency);
+        if (settingsResp?.customServices) setCustomServices(settingsResp.customServices);
       } catch (error) {
         console.error('Failed to load profile', error);
       } finally {
@@ -126,7 +129,7 @@ const Profile: React.FC = () => {
             </div>
             <button className="btn-primary" onClick={async () => {
               try {
-                await clientService.updateSettings({ currency });
+                await clientService.updateSettings({ currency, customServices });
                 alert('Preferences saved successfully!');
               } catch (e) {
                 alert('Failed to save preferences.');
@@ -152,6 +155,66 @@ const Profile: React.FC = () => {
             </select>
             <p className="text-muted" style={{ fontSize: '0.8rem', marginTop: '0.5rem' }}>
               This currency will be used to format all financial figures across your dashboard, leads, and commissions.
+            </p>
+          </div>
+
+          <hr style={{ margin: '1.5rem 0', borderColor: '#e2e8f0' }} />
+          
+          <div className="form-group">
+            <label className="form-label">CUSTOM SERVICES</label>
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+              <input 
+                type="text" 
+                className="glass-input" 
+                style={{ flex: 1 }}
+                placeholder="e.g. AI Automation"
+                value={newService}
+                onChange={(e) => setNewService(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (newService.trim() && !customServices.includes(newService.trim())) {
+                      setCustomServices([...customServices, newService.trim()]);
+                      setNewService('');
+                    }
+                  }
+                }}
+              />
+              <button 
+                type="button" 
+                className="btn-primary"
+                onClick={() => {
+                  if (newService.trim() && !customServices.includes(newService.trim())) {
+                    setCustomServices([...customServices, newService.trim()]);
+                    setNewService('');
+                  }
+                }}
+              >
+                Add
+              </button>
+            </div>
+            
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.5rem' }}>
+              {customServices.map((service, index) => (
+                <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: '#f1f5f9', padding: '4px 12px', borderRadius: '9999px', border: '1px solid #e2e8f0' }}>
+                  <span style={{ fontSize: '0.875rem', fontWeight: 500, color: '#334155' }}>{service}</span>
+                  <button 
+                    type="button"
+                    style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '1.2rem', lineHeight: 1 }}
+                    onClick={() => {
+                      setCustomServices(customServices.filter((_, i) => i !== index));
+                    }}
+                  >
+                    &times;
+                  </button>
+                </div>
+              ))}
+              {customServices.length === 0 && (
+                <p style={{ fontSize: '0.875rem', color: '#64748b' }}>No custom services added. Default services will be shown.</p>
+              )}
+            </div>
+            <p className="text-muted" style={{ fontSize: '0.8rem', marginTop: '0.5rem' }}>
+              These services will appear in the Lead Add/Edit dropdowns.
             </p>
           </div>
         </div>

@@ -64,6 +64,17 @@ const Customer = sequelize.define('Customer', {
     defaultValue: 'USD',
     field: 'Currency'
   },
+  customServices: {
+    type: DataTypes.TEXT,
+    field: 'CustomServices',
+    get() {
+      const val = this.getDataValue('customServices');
+      return val ? JSON.parse(val) : ['Web Design', 'SEO', 'Social Media', 'Google Ads', 'App Development', 'Branding', 'Consulting', 'Other'];
+    },
+    set(val) {
+      this.setDataValue('customServices', JSON.stringify(val));
+    }
+  },
   createdAt: {
     type: DataTypes.DATE,
     field: 'CreatedAt',

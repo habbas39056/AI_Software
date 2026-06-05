@@ -123,12 +123,14 @@ router.get('/settings', authenticate, async (req, res) => {
 router.put('/settings', authenticate, async (req, res) => {
   try {
     const customerId = req.user.customerId;
-    const { name, email, password, configApiKey, n8nWebhookUrl, instanceName, currency, scheduleEnabled, scheduleStartTime, scheduleEndTime, timezone } = req.body;
+    const { name, email, password, configApiKey, n8nWebhookUrl, instanceName, currency, scheduleEnabled, scheduleStartTime, scheduleEndTime, timezone, customServices } = req.body;
     
     if (req.user.role === 'TeamMember') {
       await TeamMember.update({ currency }, { where: { username: req.user.username } });
     } else {
-      await Customer.update({ name, email, password, configApiKey, n8nWebhookUrl, currency }, { where: { whatsAppNumber: customerId } });
+      const updateData = { name, email, password, configApiKey, n8nWebhookUrl, currency };
+      if (customServices !== undefined) updateData.customServices = customServices;
+      await Customer.update(updateData, { where: { whatsAppNumber: customerId } });
     }
     
     const agentUpdatePayload = {};

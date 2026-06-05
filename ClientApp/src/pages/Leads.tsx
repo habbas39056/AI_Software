@@ -6,7 +6,7 @@ import { formatCurrency } from '../utils/currencyUtils';
 import './Leads.css';
 
 const STATUS_OPTIONS = ['New', 'Contacted', 'Qualified', 'Proposal', 'Negotiation', 'Won', 'Lost'];
-const SERVICE_OPTIONS = ['Select...', 'Web Design', 'SEO', 'Social Media', 'Google Ads', 'App Development', 'Branding', 'Consulting', 'Other'];
+const DEFAULT_SERVICE_OPTIONS = ['Select...', 'Web Design', 'SEO', 'Social Media', 'Google Ads', 'App Development', 'Branding', 'Consulting', 'Other'];
 const ACTIVITY_TYPES = [
   { value: 'call', label: 'Call', icon: <Phone size={14} /> },
   { value: 'email', label: 'Email', icon: <Mail size={14} /> },
@@ -23,6 +23,7 @@ const Leads: React.FC = () => {
   const [leads, setLeads] = useState<any[]>([]);
   const [teamMembers, setTeamMembers] = useState<any[]>([]);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [serviceOptions, setServiceOptions] = useState<string[]>(DEFAULT_SERVICE_OPTIONS);
   const [loading, setLoading] = useState(true);
 
   // Filters
@@ -66,13 +67,20 @@ const Leads: React.FC = () => {
           targetId = dashboard.customer.whatsAppNumber;
           setCustomer(dashboard.customer);
           setLeads(await leadsService.getLeads(targetId!));
+          if (dashboard.customer.customServices && dashboard.customer.customServices.length > 0) {
+            setServiceOptions(['Select...', ...dashboard.customer.customServices]);
+          }
         }
       } else {
         const [leadsData, customers] = await Promise.all([
           leadsService.getLeads(targetId), adminService.getCustomers()
         ]);
         setLeads(leadsData);
-        setCustomer(customers.find((c: any) => c.whatsAppNumber === targetId));
+        const currentCustomer = customers.find((c: any) => c.whatsAppNumber === targetId);
+        setCustomer(currentCustomer);
+        if (currentCustomer?.customServices && currentCustomer.customServices.length > 0) {
+          setServiceOptions(['Select...', ...currentCustomer.customServices]);
+        }
       }
     } catch (error) { console.error('Failed to fetch data:', error); }
     finally { setLoading(false); }
@@ -364,7 +372,7 @@ const Leads: React.FC = () => {
                 <div className="form-group">
                   <label className="form-label">SERVICE</label>
                   <select className="glass-input" value={form.service} onChange={(e) => setForm({ ...form, service: e.target.value })}>
-                    {SERVICE_OPTIONS.map(s => <option key={s}>{s}</option>)}
+                    {serviceOptions.map(s => <option key={s}>{s}</option>)}
                   </select>
                 </div>
                 <div className="form-group">
