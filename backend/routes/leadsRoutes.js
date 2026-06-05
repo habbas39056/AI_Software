@@ -100,53 +100,58 @@ router.get('/detail/:id', async (req, res) => {
 // CREATE lead
 router.post('/', async (req, res) => {
   try {
-    console.log('[DEBUG /api/leads] Incoming Request Body:', req.body);
     const phoneNumber = req.body.phoneNumber || req.body.PhoneNumber || req.body.phone_number;
     const customerId = req.body.customerId || req.body.CustomerId || req.body.customer_id;
     const summary = req.body.summary || req.body.Summary;
     const name = req.body.name || req.body.Name;
     
-    console.log('[DEBUG /api/leads] Extracted -> phoneNumber:', phoneNumber, 'customerId:', customerId);
+    const pNum = phoneNumber ? String(phoneNumber).trim() : null;
+    const cId = customerId ? String(customerId).trim() : null;
 
-    // Check if a lead with this phone number already exists for this customer
-    if (phoneNumber && customerId) {
-      const pNum = String(phoneNumber).trim();
-      const cId = String(customerId).trim();
-      console.log(`[DEBUG /api/leads] Querying DB for phoneNumber='${pNum}' AND customerId='${cId}'...`);
+    if (pNum && cId) {
       let existingLead = await Lead.findOne({ where: { phoneNumber: pNum, customerId: cId } });
       
       if (existingLead) {
-        console.log(`[DEBUG /api/leads] Found existing lead ID: ${existingLead.id}`);
         const updatedFields = { 
           lastMessageAt: new Date(),
           messageCount: (existingLead.messageCount || 1) + 1 
         };
         
-        if (summary) {
-          updatedFields.summary = summary; // Update with latest summary
-        }
-        if (name && (!existingLead.name || existingLead.name.trim() === '')) {
-          updatedFields.name = name;
-        }
+        if (summary) updatedFields.summary = summary;
+        if (name && (!existingLead.name || existingLead.name.trim() === '')) updatedFields.name = name;
 
         await existingLead.update(updatedFields);
-        
-        const result = existingLead.toJSON();
-        result.activities = [];
-        result.payments = [];
-        return res.status(200).json(result);
+        return res.status(200).json(existingLead.toJSON());
       }
     }
 
-    const lead = await Lead.create({
-      ...req.body,
-      lastMessageAt: new Date(),
-      isPaused: false
-    });
-    const result = lead.toJSON();
-    result.activities = [];
-    result.payments = [];
-    res.status(201).json(result);
+    try {
+      const lead = await Lead.create({
+        ...req.body,
+        lastMessageAt: new Date(),
+        isPaused: false,
+        messageCount: 1
+      });
+      res.status(201).json(lead.toJSON());
+    } catch (createError) {
+      if (createError.name === 'SequelizeUniqueConstraintError' && pNum && cId) {
+        // Fallback: If create fails due to unique constraint, it means the lead DOES exist.
+        // We will forcefully update it!
+        let existingLead = await Lead.findOne({ where: { phoneNumber: pNum, customerId: cId } });
+        if (existingLead) {
+          const updatedFields = { 
+            lastMessageAt: new Date(),
+            messageCount: (existingLead.messageCount || 1) + 1 
+          };
+          if (summary) updatedFields.summary = summary;
+          if (name && (!existingLead.name || existingLead.name.trim() === '')) updatedFields.name = name;
+  
+          await existingLead.update(updatedFields);
+          return res.status(200).json(existingLead.toJSON());
+        }
+      }
+      throw createError; // Re-throw if it wasn't a unique constraint error or we couldn't resolve it
+    }
   } catch (error) {
     console.error('Error creating lead:', error);
     res.status(500).json({ message: 'Error creating lead' });
