@@ -107,10 +107,7 @@ app.post('/api/webhook-proxy/:instanceName', async (req, res) => {
       return res.status(200).json({ status: 'paused', reason: 'Outside of scheduled hours' });
     }
 
-    // 3. Increment message count for the agent
-    await agent.increment('totalMessages');
-
-    // 4. Find the customer's n8n webhook URL
+    // 3. Find the customer's n8n webhook URL
     const customer = await Customer.findOne({ where: { whatsAppNumber: agent.customerId } });
     if (!customer || !customer.n8nWebhookUrl) {
       console.log(`[Webhook Proxy] No webhook URL configured for customer: ${agent.customerId}`);
