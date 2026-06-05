@@ -100,11 +100,14 @@ router.get('/detail/:id', async (req, res) => {
 // CREATE lead
 router.post('/', async (req, res) => {
   try {
-    const { phoneNumber, customerId, summary, name } = req.body;
+    const phoneNumber = req.body.phoneNumber || req.body.PhoneNumber;
+    const customerId = req.body.customerId || req.body.CustomerId;
+    const summary = req.body.summary || req.body.Summary;
+    const name = req.body.name || req.body.Name;
     
     // Check if a lead with this phone number already exists for this customer
     if (phoneNumber && customerId) {
-      let existingLead = await Lead.findOne({ where: { phoneNumber, customerId } });
+      let existingLead = await Lead.findOne({ where: { phoneNumber: String(phoneNumber).trim(), customerId: String(customerId).trim() } });
       
       if (existingLead) {
         const updatedFields = { 
