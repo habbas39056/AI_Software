@@ -12,6 +12,7 @@ const Profile: React.FC = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'profile' | 'services' | 'currency'>('profile');
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -70,9 +71,32 @@ const Profile: React.FC = () => {
   return (
     <div className="profile-page">
 
-
       <div className="settings-container mt-2">
-        <div className="white-box mb-2">
+        
+        {/* Tab Navigation */}
+        <div className="flex border-b border-slate-200 mb-4 gap-6 px-2">
+          <button 
+            className={`pb-2 text-sm font-medium transition-colors ${activeTab === 'profile' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-slate-500 hover:text-slate-800'}`}
+            onClick={() => setActiveTab('profile')}
+          >
+            Personal Details
+          </button>
+          <button 
+            className={`pb-2 text-sm font-medium transition-colors ${activeTab === 'services' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-slate-500 hover:text-slate-800'}`}
+            onClick={() => setActiveTab('services')}
+          >
+            Custom Services
+          </button>
+          <button 
+            className={`pb-2 text-sm font-medium transition-colors ${activeTab === 'currency' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-slate-500 hover:text-slate-800'}`}
+            onClick={() => setActiveTab('currency')}
+          >
+            Currency Options
+          </button>
+        </div>
+
+        {activeTab === 'profile' && (
+          <div className="white-box mb-2">
           <h2 className="box-title mb-2"><User size={20} /> Personal Details</h2>
           <form className="profile-form" onSubmit={handleUpdateProfile}>
             <div className="profile-image-section">
@@ -115,7 +139,9 @@ const Profile: React.FC = () => {
             </div>
           </form>
         </div>
+        )}
 
+        {activeTab === 'currency' && (
         <div className="white-box mt-2">
           <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
             <div className="card-title-group" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
@@ -123,18 +149,18 @@ const Profile: React.FC = () => {
                 <Smartphone size={20} />
               </div>
               <div>
-                <h2 className="card-title" style={{ margin: 0 }}>General Preferences</h2>
-                <p className="card-subtitle" style={{ margin: 0, fontSize: '0.85rem', color: '#666' }}>Configure global portal settings</p>
+                <h2 className="card-title" style={{ margin: 0 }}>Currency Options</h2>
+                <p className="card-subtitle" style={{ margin: 0, fontSize: '0.85rem', color: '#666' }}>Configure global portal currency</p>
               </div>
             </div>
             <button className="btn-primary" onClick={async () => {
               try {
                 await clientService.updateSettings({ currency, customServices });
-                alert('Preferences saved successfully!');
+                alert('Currency saved successfully!');
               } catch (e) {
-                alert('Failed to save preferences.');
+                alert('Failed to save currency.');
               }
-            }}>Save Preferences</button>
+            }}>Save Currency</button>
           </div>
           
           <div className="form-group">
@@ -157,11 +183,32 @@ const Profile: React.FC = () => {
               This currency will be used to format all financial figures across your dashboard, leads, and commissions.
             </p>
           </div>
+        </div>
+        )}
 
-          <hr style={{ margin: '1.5rem 0', borderColor: '#e2e8f0' }} />
+        {activeTab === 'services' && (
+        <div className="white-box mt-2">
+          <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <div className="card-title-group" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <div className="card-icon blue">
+                <Smartphone size={20} />
+              </div>
+              <div>
+                <h2 className="card-title" style={{ margin: 0 }}>Custom Services</h2>
+                <p className="card-subtitle" style={{ margin: 0, fontSize: '0.85rem', color: '#666' }}>Manage services available for leads</p>
+              </div>
+            </div>
+            <button className="btn-primary" onClick={async () => {
+              try {
+                await clientService.updateSettings({ currency, customServices });
+                alert('Services saved successfully!');
+              } catch (e) {
+                alert('Failed to save services.');
+              }
+            }}>Save Services</button>
+          </div>
           
           <div className="form-group">
-            <label className="form-label">CUSTOM SERVICES</label>
             <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
               <input 
                 type="text" 
@@ -218,6 +265,7 @@ const Profile: React.FC = () => {
             </p>
           </div>
         </div>
+        )}
 
       </div>
     </div>
