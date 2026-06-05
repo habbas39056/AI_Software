@@ -217,21 +217,28 @@ const ClientDashboard: React.FC = () => {
               <thead>
                 <tr>
                   <th>Phone</th>
+                  <th>Name</th>
+                  <th>Summary</th>
                   <th>Status</th>
-                  <th>Score</th>
                 </tr>
               </thead>
               <tbody>
-                {customer.leads?.slice(0, 5).map((l: any) => (
+                {[...(customer.leads || [])]
+                  .sort((a, b) => new Date(b.lastMessageAt || b.createdAt || 0).getTime() - new Date(a.lastMessageAt || a.createdAt || 0).getTime())
+                  .slice(0, 5)
+                  .map((l: any) => (
                   <tr key={l.id}>
                     <td className="font-mono">{l.phoneNumber}</td>
+                    <td>{l.name || 'Unknown'}</td>
+                    <td style={{ maxWidth: '250px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={l.summary}>
+                      {l.summary || 'No summary'}
+                    </td>
                     <td><span className="badge active">Engaged</span></td>
-                    <td><span className="tag">{l.score}</span></td>
                   </tr>
                 ))}
                 {(!customer.leads || customer.leads.length === 0) && (
                   <tr>
-                    <td colSpan={3} className="empty-state">No conversations yet.</td>
+                    <td colSpan={4} className="empty-state">No conversations yet.</td>
                   </tr>
                 )}
               </tbody>
