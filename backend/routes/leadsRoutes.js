@@ -100,16 +100,23 @@ router.get('/detail/:id', async (req, res) => {
 // CREATE lead
 router.post('/', async (req, res) => {
   try {
-    const phoneNumber = req.body.phoneNumber || req.body.PhoneNumber;
-    const customerId = req.body.customerId || req.body.CustomerId;
+    console.log('[DEBUG /api/leads] Incoming Request Body:', req.body);
+    const phoneNumber = req.body.phoneNumber || req.body.PhoneNumber || req.body.phone_number;
+    const customerId = req.body.customerId || req.body.CustomerId || req.body.customer_id;
     const summary = req.body.summary || req.body.Summary;
     const name = req.body.name || req.body.Name;
     
+    console.log('[DEBUG /api/leads] Extracted -> phoneNumber:', phoneNumber, 'customerId:', customerId);
+
     // Check if a lead with this phone number already exists for this customer
     if (phoneNumber && customerId) {
-      let existingLead = await Lead.findOne({ where: { phoneNumber: String(phoneNumber).trim(), customerId: String(customerId).trim() } });
+      const pNum = String(phoneNumber).trim();
+      const cId = String(customerId).trim();
+      console.log(`[DEBUG /api/leads] Querying DB for phoneNumber='${pNum}' AND customerId='${cId}'...`);
+      let existingLead = await Lead.findOne({ where: { phoneNumber: pNum, customerId: cId } });
       
       if (existingLead) {
+        console.log(`[DEBUG /api/leads] Found existing lead ID: ${existingLead.id}`);
         const updatedFields = { 
           lastMessageAt: new Date(),
           messageCount: (existingLead.messageCount || 1) + 1 
