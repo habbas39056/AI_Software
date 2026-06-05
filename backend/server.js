@@ -10,6 +10,7 @@ const knowledgeRoutes = require('./routes/knowledgeRoutes');
 const leadsRoutes = require('./routes/leadsRoutes');
 const evolutionRoutes = require('./routes/evolutionRoutes');
 const teamRoutes = require('./routes/teamRoutes');
+const uploadRoutes = require('./routes/uploadRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -27,6 +28,7 @@ app.use('/api/knowledge', knowledgeRoutes);
 app.use('/api/leads', leadsRoutes);
 app.use('/api/evolution', evolutionRoutes);
 app.use('/api/team', teamRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // Serve Static Uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
