@@ -207,6 +207,21 @@ const Leads: React.FC = () => {
     } catch (error) { console.error('Failed to record payment:', error); }
   };
 
+  const handleDeletePayment = async (paymentId: number) => {
+    if (!window.confirm('Delete this payment record?')) return;
+    try {
+      await leadsService.deletePayment(paymentId);
+      const updatedLeads = leads.map(l => {
+        if (l.id === selectedLead.id) {
+          return { ...l, payments: (l.payments || []).filter((p: any) => p.id !== paymentId) };
+        }
+        return l;
+      });
+      setLeads(updatedLeads);
+      setSelectedLead((prev: any) => ({ ...prev, payments: (prev.payments || []).filter((p: any) => p.id !== paymentId) }));
+    } catch (error) { console.error('Failed to delete payment:', error); }
+  };
+
   const handleLogActivity = async () => {
     if (!selectedLead || !activityForm.note) return;
     try {
@@ -438,10 +453,15 @@ const Leads: React.FC = () => {
                 ) : (
                   <div className="payments-list">
                     {selectedLead.payments.map((p: any) => (
-                      <div key={p.id} className="payment-row">
-                        <span className="payment-amount">{formatCurrency(p.amount, customer?.currency)}</span>
-                        <span className="payment-date">{formatDate(p.date)}</span>
-                        <span className="payment-note">{p.note || ''}</span>
+                      <div key={p.id} className="payment-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div>
+                          <span className="payment-amount" style={{ marginRight: '1rem' }}>{formatCurrency(p.amount, customer?.currency)}</span>
+                          <span className="payment-date" style={{ marginRight: '1rem' }}>{formatDate(p.date)}</span>
+                          <span className="payment-note">{p.note || ''}</span>
+                        </div>
+                        <button type="button" onClick={() => handleDeletePayment(p.id)} title="Delete Payment" style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}>
+                          <Trash2 size={16} />
+                        </button>
                       </div>
                     ))}
                   </div>
