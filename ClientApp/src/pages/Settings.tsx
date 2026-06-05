@@ -87,6 +87,27 @@ const Settings: React.FC = () => {
     }
   };
 
+  const handleRemoveSchedule = async () => {
+    setSavingSchedule(true);
+    try {
+      await clientService.updateSettings({
+        scheduleEnabled: false,
+        scheduleStartTime: '',
+        scheduleEndTime: '',
+        timezone: 'UTC'
+      });
+      setScheduleEnabled(false);
+      setScheduleStartTime('');
+      setScheduleEndTime('');
+      alert('Schedule removed successfully!');
+      fetchData();
+    } catch (e) {
+      alert('Failed to remove schedule.');
+    } finally {
+      setSavingSchedule(false);
+    }
+  };
+
   if (loading) return <div className="loading">Loading Configuration...</div>;
   if (!data) return <div className="error">Failed to load configuration.</div>;
 
@@ -129,70 +150,81 @@ const Settings: React.FC = () => {
                 <p className="card-subtitle">Set operating hours for your AI agent</p>
               </div>
             </div>
-            <button className="btn-primary" onClick={handleSaveSchedule} disabled={savingSchedule}>
-              {savingSchedule ? <Loader2 size={16} className="animate-spin" /> : 'Save Schedule'}
-            </button>
-          </div>
-
-          {agent?.scheduleEnabled && (
-            <div style={{ background: '#f0f9ff', borderBottom: '1px solid #e0f2fe', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#0ea5e9' }}></div>
-              <span style={{ fontSize: '0.9rem', color: '#0369a1', fontWeight: 500 }}>
-                Active Schedule: <strong style={{ color: '#0284c7' }}>{agent.scheduleStartTime} - {agent.scheduleEndTime}</strong> ({agent.timezone})
-              </span>
-            </div>
-          )}
-
-          <div className="schedule-form" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <input 
-                type="checkbox" 
-                id="scheduleEnabled" 
-                checked={scheduleEnabled} 
-                onChange={e => setScheduleEnabled(e.target.checked)} 
-                style={{ width: '18px', height: '18px', accentColor: '#3b82f6' }}
-              />
-              <label htmlFor="scheduleEnabled" style={{ color: '#111827', fontSize: '1rem', fontWeight: 500, cursor: 'pointer' }}>Enable Automatic Scheduling</label>
-            </div>
-
-            {scheduleEnabled && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px', marginTop: '10px' }}>
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label style={{ fontSize: '0.85rem', color: '#4b5563', marginBottom: '5px', display: 'block', fontWeight: 500 }}>Timezone</label>
-                  <select 
-                    value={timezone} 
-                    onChange={e => setTimezone(e.target.value)}
-                    style={{ width: '100%', padding: '10px', borderRadius: '8px', background: '#f9fafb', border: '1px solid #d1d5db', color: '#111827', fontWeight: 500 }}
-                  >
-                    <option value="UTC">UTC</option>
-                    <option value="America/New_York">EST (New York)</option>
-                    <option value="America/Los_Angeles">PST (Los Angeles)</option>
-                    <option value="Europe/London">GMT (London)</option>
-                    <option value="Asia/Karachi">PKT (Karachi)</option>
-                    <option value="Asia/Dubai">GST (Dubai)</option>
-                  </select>
-                </div>
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label style={{ fontSize: '0.85rem', color: '#4b5563', marginBottom: '5px', display: 'block', fontWeight: 500 }}>Start Time (HH:MM)</label>
-                  <input 
-                    type="time" 
-                    value={scheduleStartTime} 
-                    onChange={e => setScheduleStartTime(e.target.value)}
-                    style={{ width: '100%', padding: '10px', borderRadius: '8px', background: '#f9fafb', border: '1px solid #d1d5db', color: '#111827', fontWeight: 500 }}
-                  />
-                </div>
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label style={{ fontSize: '0.85rem', color: '#4b5563', marginBottom: '5px', display: 'block', fontWeight: 500 }}>End Time (HH:MM)</label>
-                  <input 
-                    type="time" 
-                    value={scheduleEndTime} 
-                    onChange={e => setScheduleEndTime(e.target.value)}
-                    style={{ width: '100%', padding: '10px', borderRadius: '8px', background: '#f9fafb', border: '1px solid #d1d5db', color: '#111827', fontWeight: 500 }}
-                  />
-                </div>
-              </div>
+            {!agent?.scheduleEnabled && (
+              <button className="btn-primary" onClick={handleSaveSchedule} disabled={savingSchedule}>
+                {savingSchedule ? <Loader2 size={16} className="animate-spin" /> : 'Save Schedule'}
+              </button>
             )}
           </div>
+
+          {agent?.scheduleEnabled ? (
+            <div style={{ background: '#f0f9ff', borderBottom: '1px solid #e0f2fe', padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#0ea5e9', boxShadow: '0 0 5px #0ea5e9' }}></div>
+                <span style={{ fontSize: '1rem', color: '#0369a1', fontWeight: 600 }}>
+                  Active Schedule: <strong style={{ color: '#0284c7', background: '#e0f2fe', padding: '4px 8px', borderRadius: '4px' }}>{agent.scheduleStartTime} - {agent.scheduleEndTime}</strong> ({agent.timezone})
+                </span>
+              </div>
+              <button 
+                onClick={handleRemoveSchedule}
+                disabled={savingSchedule}
+                style={{ background: '#fee2e2', color: '#dc2626', border: '1px solid #fca5a5', padding: '6px 12px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px' }}
+              >
+                Delete Schedule
+              </button>
+            </div>
+          ) : (
+            <div className="schedule-form" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <input 
+                  type="checkbox" 
+                  id="scheduleEnabled" 
+                  checked={scheduleEnabled} 
+                  onChange={e => setScheduleEnabled(e.target.checked)} 
+                  style={{ width: '18px', height: '18px', accentColor: '#3b82f6' }}
+                />
+                <label htmlFor="scheduleEnabled" style={{ color: '#111827', fontSize: '1rem', fontWeight: 500, cursor: 'pointer' }}>Enable Automatic Scheduling</label>
+              </div>
+
+              {scheduleEnabled && (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px', marginTop: '10px' }}>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label style={{ fontSize: '0.85rem', color: '#4b5563', marginBottom: '5px', display: 'block', fontWeight: 500 }}>Timezone</label>
+                    <select 
+                      value={timezone} 
+                      onChange={e => setTimezone(e.target.value)}
+                      style={{ width: '100%', padding: '10px', borderRadius: '8px', background: '#f9fafb', border: '1px solid #d1d5db', color: '#111827', fontWeight: 500 }}
+                    >
+                      <option value="UTC">UTC</option>
+                      <option value="America/New_York">EST (New York)</option>
+                      <option value="America/Los_Angeles">PST (Los Angeles)</option>
+                      <option value="Europe/London">GMT (London)</option>
+                      <option value="Asia/Karachi">PKT (Karachi)</option>
+                      <option value="Asia/Dubai">GST (Dubai)</option>
+                    </select>
+                  </div>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label style={{ fontSize: '0.85rem', color: '#4b5563', marginBottom: '5px', display: 'block', fontWeight: 500 }}>Start Time (HH:MM)</label>
+                    <input 
+                      type="time" 
+                      value={scheduleStartTime} 
+                      onChange={e => setScheduleStartTime(e.target.value)}
+                      style={{ width: '100%', padding: '10px', borderRadius: '8px', background: '#f9fafb', border: '1px solid #d1d5db', color: '#111827', fontWeight: 500 }}
+                    />
+                  </div>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label style={{ fontSize: '0.85rem', color: '#4b5563', marginBottom: '5px', display: 'block', fontWeight: 500 }}>End Time (HH:MM)</label>
+                    <input 
+                      type="time" 
+                      value={scheduleEndTime} 
+                      onChange={e => setScheduleEndTime(e.target.value)}
+                      style={{ width: '100%', padding: '10px', borderRadius: '8px', background: '#f9fafb', border: '1px solid #d1d5db', color: '#111827', fontWeight: 500 }}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Card 2: WhatsApp AI Engine Sync */}

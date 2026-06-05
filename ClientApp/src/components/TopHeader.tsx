@@ -23,6 +23,7 @@ const TopHeader: React.FC<TopHeaderProps> = ({ role, userName, dateString }) => 
   const [runnerStarting, setRunnerStarting] = useState(false);
 
   const [isAgentActive, setIsAgentActive] = useState(true);
+  const [isScheduledAsleep, setIsScheduledAsleep] = useState(false);
 
   useEffect(() => {
     if (role === 'Super Admin') return;
@@ -30,13 +31,39 @@ const TopHeader: React.FC<TopHeaderProps> = ({ role, userName, dateString }) => 
       try {
         const settings = await clientService.getSettings();
         if (settings?.agents?.length > 0) {
-          setIsAgentActive(settings.agents[0].isActive);
+          const agent = settings.agents[0];
+          setIsAgentActive(agent.isActive);
+          
+          if (agent.scheduleEnabled && agent.scheduleStartTime && agent.scheduleEndTime) {
+            try {
+              const tz = agent.timezone || 'UTC';
+              const formatter = new Intl.DateTimeFormat('en-US', { 
+                timeZone: tz, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' 
+              });
+              const currentTime = formatter.format(new Date()); 
+              const start = agent.scheduleStartTime;
+              const end = agent.scheduleEndTime;
+              let isAsleep = false;
+              if (start < end) {
+                isAsleep = !(currentTime >= start && currentTime <= end);
+              } else {
+                isAsleep = !(currentTime >= start || currentTime <= end);
+              }
+              setIsScheduledAsleep(isAsleep);
+            } catch(e) {}
+          } else {
+            setIsScheduledAsleep(false);
+          }
         }
       } catch (e) {
         console.error('Failed to fetch agent status', e);
       }
     };
     fetchAgentStatus();
+    
+    // Check schedule every minute to keep UI synced automatically
+    const interval = setInterval(fetchAgentStatus, 60000);
+    return () => clearInterval(interval);
   }, [role]);
 
   const handleToggleAgent = async () => {
@@ -126,16 +153,16 @@ const TopHeader: React.FC<TopHeaderProps> = ({ role, userName, dateString }) => 
 
       <div className="header-actions" style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
         {role !== 'Super Admin' && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: isAgentActive ? 'rgba(59, 130, 246, 0.1)' : 'rgba(248, 113, 113, 0.1)', padding: '6px 14px', borderRadius: '30px', border: `2px solid ${isAgentActive ? '#3b82f6' : '#f87171'}`, boxShadow: isAgentActive ? '0 0 10px rgba(59, 130, 246, 0.2)' : '0 0 10px rgba(248, 113, 113, 0.2)', transition: 'all 0.3s ease' }}>
-            <Power size={18} color={isAgentActive ? '#3b82f6' : '#f87171'} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: !isAgentActive ? 'rgba(248, 113, 113, 0.1)' : isScheduledAsleep ? 'rgba(251, 191, 36, 0.1)' : 'rgba(59, 130, 246, 0.1)', padding: '6px 14px', borderRadius: '30px', border: `2px solid ${!isAgentActive ? '#f87171' : isScheduledAsleep ? '#f59e0b' : '#3b82f6'}`, boxShadow: !isAgentActive ? '0 0 10px rgba(248, 113, 113, 0.2)' : isScheduledAsleep ? '0 0 10px rgba(251, 191, 36, 0.2)' : '0 0 10px rgba(59, 130, 246, 0.2)', transition: 'all 0.3s ease' }}>
+            <Power size={18} color={!isAgentActive ? '#f87171' : isScheduledAsleep ? '#f59e0b' : '#3b82f6'} />
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '1px', color: '#000', fontWeight: 600 }}>Agent Kill Switch</span>
-              <span style={{ fontSize: '1rem', fontWeight: 800, color: isAgentActive ? '#3b82f6' : '#f87171', lineHeight: '1.2' }}>{isAgentActive ? 'ONLINE' : 'OFFLINE'}</span>
+              <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '1px', color: '#000', fontWeight: 600 }}>Agent Status</span>
+              <span style={{ fontSize: '1rem', fontWeight: 800, color: !isAgentActive ? '#f87171' : isScheduledAsleep ? '#f59e0b' : '#3b82f6', lineHeight: '1.2' }}>{!isAgentActive ? 'OFFLINE' : isScheduledAsleep ? 'ASLEEP' : 'ONLINE'}</span>
             </div>
             <button 
               onClick={handleToggleAgent}
-              style={{ background: 'none', border: 'none', color: isAgentActive ? '#3b82f6' : '#f87171', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0, marginLeft: '4px' }}
-              title={isAgentActive ? 'Click to Kill AI Agent' : 'Click to Revive AI Agent'}
+              style={{ background: 'none', border: 'none', color: isAgentActive ? (isScheduledAsleep ? '#f59e0b' : '#3b82f6') : '#f87171', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0, marginLeft: '4px' }}
+              title={isAgentActive ? 'Click to Manually Kill Agent' : 'Click to Revive Agent'}
             >
               {isAgentActive ? <ToggleRight size={32} /> : <ToggleLeft size={32} />}
             </button>
