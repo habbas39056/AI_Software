@@ -234,4 +234,23 @@ export const teamService = {
   },
 };
 
+export const instructionsService = {
+  getInstructions: async () => {
+    const response = await api.get('/instructions');
+    return response.data;
+  },
+  createInstruction: async (data: { title: string; content: string }) => {
+    const response = await api.post('/instructions', data);
+    return response.data;
+  },
+  updateInstruction: async (id: number, data: { title?: string; content?: string }) => {
+    const response = await api.put(`/instructions/${id}`, data);
+    return response.data;
+  },
+  deleteInstruction: async (id: number) => {
+    const response = await api.delete(`/instructions/${id}`);
+    return response.data;
+  },
+};
+
 export default api;

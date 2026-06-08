@@ -4,6 +4,7 @@ const Agent = require('./Agent');
 const { Lead, LeadActivity, LeadPayment } = require('./Lead');
 const KnowledgeBase = require('./KnowledgeBase');
 const TeamMember = require('./TeamMember');
+const Instruction = require('./Instruction');
 
 // Associations
 Customer.hasMany(Agent, { foreignKey: 'customerId', as: 'agents' });
@@ -18,6 +19,9 @@ KnowledgeBase.belongsTo(Customer, { foreignKey: 'customerId', as: 'customer' });
 Customer.hasMany(TeamMember, { foreignKey: 'customerId', as: 'teamMembers' });
 TeamMember.belongsTo(Customer, { foreignKey: 'customerId', as: 'customer' });
 
+Customer.hasMany(Instruction, { foreignKey: 'customerId', as: 'instructions' });
+Instruction.belongsTo(Customer, { foreignKey: 'customerId', as: 'customer' });
+
 module.exports = {
   sequelize,
   Customer,
@@ -27,4 +31,5 @@ module.exports = {
   LeadPayment,
   KnowledgeBase,
   TeamMember,
+  Instruction,
 };

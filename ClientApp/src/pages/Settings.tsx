@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { clientService, evolutionService } from '../services/api';
-import { Zap, Loader2, Smartphone } from 'lucide-react';
+import { clientService, evolutionService, instructionsService } from '../services/api';
+import { Zap, Loader2, Smartphone, FileText, Plus, Trash2, Edit2 } from 'lucide-react';
 import './Settings.css';
 
 const Settings: React.FC = () => {
@@ -16,6 +16,15 @@ const Settings: React.FC = () => {
   const [scheduleEndTime, setScheduleEndTime] = useState('17:00');
   const [timezone, setTimezone] = useState('UTC');
   const [savingSchedule, setSavingSchedule] = useState(false);
+
+  // Tabs state
+  const [activeTab, setActiveTab] = useState<'scheduling' | 'sync' | 'instructions'>('scheduling');
+
+  // Instructions state
+  const [instructions, setInstructions] = useState<{id: number, title: string, content: string}[]>([]);
+  const [instructionTitle, setInstructionTitle] = useState('');
+  const [instructionContent, setInstructionContent] = useState('');
+  const [editingInstructionId, setEditingInstructionId] = useState<number | null>(null);
   const fetchStatus = async (instance: string) => {
     try {
       const resp = await evolutionService.getStatus(instance);
@@ -39,6 +48,9 @@ const Settings: React.FC = () => {
         setScheduleEndTime(agent.scheduleEndTime || '17:00');
         setTimezone(agent.timezone || 'UTC');
       }
+      
+      const instructionsResp = await instructionsService.getInstructions().catch(() => []);
+      setInstructions(instructionsResp || []);
     } catch (error) {
       console.error('Failed to fetch settings:', error);
     } finally {
@@ -135,10 +147,63 @@ const Settings: React.FC = () => {
         </div>
       </div>
 
-      {/* ── Settings Grid ── */}
-      <div className="settings-grid">
+      {/* ── Tab Navigation ── */}
+      <div style={{ display: 'flex', borderBottom: '1px solid #e2e8f0', marginBottom: '1.5rem', gap: '2rem', padding: '0 0.5rem' }}>
+        <button 
+          style={{ 
+            background: 'none', 
+            border: 'none', 
+            borderBottom: activeTab === 'scheduling' ? '2px solid #2563eb' : '2px solid transparent', 
+            padding: '0.5rem 0.5rem 0.75rem 0.5rem', 
+            fontSize: '0.95rem', 
+            fontWeight: 500, 
+            color: activeTab === 'scheduling' ? '#2563eb' : '#64748b',
+            cursor: 'pointer',
+            transition: 'all 0.2s'
+          }}
+          onClick={() => setActiveTab('scheduling')}
+        >
+          Agent Scheduling
+        </button>
+        <button 
+          style={{ 
+            background: 'none', 
+            border: 'none', 
+            borderBottom: activeTab === 'sync' ? '2px solid #2563eb' : '2px solid transparent', 
+            padding: '0.5rem 0.5rem 0.75rem 0.5rem', 
+            fontSize: '0.95rem', 
+            fontWeight: 500, 
+            color: activeTab === 'sync' ? '#2563eb' : '#64748b',
+            cursor: 'pointer',
+            transition: 'all 0.2s'
+          }}
+          onClick={() => setActiveTab('sync')}
+        >
+          WhatsApp Engine Sync
+        </button>
+        <button 
+          style={{ 
+            background: 'none', 
+            border: 'none', 
+            borderBottom: activeTab === 'instructions' ? '2px solid #2563eb' : '2px solid transparent', 
+            padding: '0.5rem 0.5rem 0.75rem 0.5rem', 
+            fontSize: '0.95rem', 
+            fontWeight: 500, 
+            color: activeTab === 'instructions' ? '#2563eb' : '#64748b',
+            cursor: 'pointer',
+            transition: 'all 0.2s'
+          }}
+          onClick={() => setActiveTab('instructions')}
+        >
+          Agent Instructions
+        </button>
+      </div>
+
+      {/* ── Settings Content ── */}
+      <div className="settings-content">
 
         {/* Card 1: Agent Scheduling */}
+        {activeTab === 'scheduling' && (
         <div className="settings-card">
           <div className="card-header">
             <div className="card-title-group">
@@ -226,8 +291,10 @@ const Settings: React.FC = () => {
             </div>
           )}
         </div>
+        )}
 
         {/* Card 2: WhatsApp AI Engine Sync */}
+        {activeTab === 'sync' && (
         <div className="settings-card">
           <div className="card-header">
             <div className="card-title-group">
@@ -261,6 +328,127 @@ const Settings: React.FC = () => {
             )}
           </div>
         </div>
+        )}
+
+        {/* Card 3: Agent Instructions */}
+        {activeTab === 'instructions' && (
+        <div className="settings-card">
+          <div className="card-header">
+            <div className="card-title-group">
+              <div className="card-icon purple">
+                <FileText size={20} />
+              </div>
+              <div>
+                <h2 className="card-title">Agent Instructions</h2>
+                <p className="card-subtitle">Manage instructions for your AI agent</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="form-group mb-4" style={{ padding: '20px', borderBottom: '1px solid #e2e8f0' }}>
+            <h3 style={{ fontSize: '1rem', marginBottom: '10px', color: '#1e293b' }}>{editingInstructionId ? 'Edit Instruction' : 'Add New Instruction'}</h3>
+            <input 
+              type="text" 
+              className="glass-input"
+              placeholder="Instruction Title (e.g., Tone of Voice)"
+              value={instructionTitle}
+              onChange={(e) => setInstructionTitle(e.target.value)}
+              style={{ marginBottom: '10px' }}
+            />
+            <textarea 
+              className="glass-input" 
+              placeholder="Instruction Details..."
+              value={instructionContent}
+              onChange={(e) => setInstructionContent(e.target.value)}
+              rows={4}
+              style={{ resize: 'vertical', marginBottom: '10px' }}
+            />
+            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              {editingInstructionId && (
+                <button 
+                  className="btn-secondary" 
+                  onClick={() => {
+                    setEditingInstructionId(null);
+                    setInstructionTitle('');
+                    setInstructionContent('');
+                  }}
+                  style={{ background: '#e2e8f0', color: '#475569', border: 'none', padding: '0.5rem 1rem', borderRadius: '0.375rem', fontWeight: 500, cursor: 'pointer' }}
+                >
+                  Cancel
+                </button>
+              )}
+              <button 
+                className="btn-primary" 
+                onClick={async () => {
+                  if (!instructionTitle.trim() || !instructionContent.trim()) {
+                    alert('Title and content are required.');
+                    return;
+                  }
+                  try {
+                    if (editingInstructionId) {
+                      const updated = await instructionsService.updateInstruction(editingInstructionId, { title: instructionTitle, content: instructionContent });
+                      setInstructions(instructions.map(i => i.id === editingInstructionId ? updated : i));
+                      setEditingInstructionId(null);
+                    } else {
+                      const newInstruction = await instructionsService.createInstruction({ title: instructionTitle, content: instructionContent });
+                      setInstructions([...instructions, newInstruction]);
+                    }
+                    setInstructionTitle('');
+                    setInstructionContent('');
+                  } catch (e) {
+                    alert('Failed to save instruction.');
+                  }
+                }}
+              >
+                <Plus size={16} style={{ marginRight: '4px', verticalAlign: 'middle' }} /> {editingInstructionId ? 'Update' : 'Add'} Instruction
+              </button>
+            </div>
+          </div>
+
+          <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            {instructions.length === 0 ? (
+              <p className="text-muted text-center">No instructions added yet.</p>
+            ) : (
+              instructions.map((inst) => (
+                <div key={inst.id} style={{ padding: '15px', border: '1px solid #e2e8f0', borderRadius: '8px', background: '#f8fafc' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <h4 style={{ margin: '0 0 10px 0', color: '#0f172a' }}>{inst.title}</h4>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                      <button 
+                        style={{ background: 'none', border: 'none', color: '#3b82f6', cursor: 'pointer' }}
+                        onClick={() => {
+                          setEditingInstructionId(inst.id);
+                          setInstructionTitle(inst.title);
+                          setInstructionContent(inst.content);
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                      >
+                        <Edit2 size={16} />
+                      </button>
+                      <button 
+                        style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer' }}
+                        onClick={async () => {
+                          if (window.confirm('Are you sure you want to delete this instruction?')) {
+                            try {
+                              await instructionsService.deleteInstruction(inst.id);
+                              setInstructions(instructions.filter(i => i.id !== inst.id));
+                            } catch (e) {
+                              alert('Failed to delete instruction.');
+                            }
+                          }
+                        }}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                  <p style={{ margin: 0, fontSize: '0.95rem', color: '#334155', whiteSpace: 'pre-wrap' }}>{inst.content}</p>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+        )}
       </div>
     </div>
   );

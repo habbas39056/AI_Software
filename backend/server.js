@@ -11,6 +11,7 @@ const leadsRoutes = require('./routes/leadsRoutes');
 const evolutionRoutes = require('./routes/evolutionRoutes');
 const teamRoutes = require('./routes/teamRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
+const instructionRoutes = require('./routes/instructionRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -29,6 +30,7 @@ app.use('/api/leads', leadsRoutes);
 app.use('/api/evolution', evolutionRoutes);
 app.use('/api/team', teamRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/instructions', instructionRoutes);
 
 // Serve Static Uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -141,7 +143,7 @@ const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
 });
 
-sequelize.sync({ alter: true }).then(async () => {
+sequelize.sync().then(async () => {
   console.log('Database synced successfully');
   
   // Create a MySQL trigger to automatically increment MessageCount whenever Summary changes.

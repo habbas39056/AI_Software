@@ -106,6 +106,10 @@ router.get('/dashboard', authenticate, async (req, res) => {
 
 router.get('/settings', authenticate, async (req, res) => {
   try {
+    if (req.user.role === 'Super Admin') {
+      return res.json({ currency: 'USD', customServices: [] });
+    }
+
     const customerId = req.user.customerId;
     const customer = await Customer.findByPk(customerId, {
       include: [{ model: Agent, as: 'agents' }]
@@ -130,6 +134,10 @@ router.get('/settings', authenticate, async (req, res) => {
 
 router.put('/settings', authenticate, async (req, res) => {
   try {
+    if (req.user.role === 'Super Admin') {
+      return res.json({ message: 'Settings updated successfully' });
+    }
+
     const customerId = req.user.customerId;
     const { name, email, password, configApiKey, n8nWebhookUrl, instanceName, currency, scheduleEnabled, scheduleStartTime, scheduleEndTime, timezone, customServices } = req.body;
     
