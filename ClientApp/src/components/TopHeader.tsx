@@ -112,6 +112,8 @@ const TopHeader: React.FC<TopHeaderProps> = ({ role, userName, dateString }) => 
   const isProfile = location.pathname.includes('/profile');
   const isSettings = location.pathname.includes('/settings');
   const isCommissions = location.pathname.includes('/commissions');
+  const isComplaints = location.pathname.includes('/complaints');
+  const isInstructions = location.pathname.includes('/instructions');
 
   let title = isSuperAdmin ? 'Agency Overview' : (userName ? `Welcome back, ${userName}` : 'Dashboard');
   let subtitle = isSuperAdmin ? dateString || 'Monday, June 26, 2024' : (
@@ -142,6 +144,12 @@ const TopHeader: React.FC<TopHeaderProps> = ({ role, userName, dateString }) => 
         Overview <span style={{ margin: '0 0.5rem' }}>&gt;</span> <span style={{ color: '#10B981' }}>Real-time Stats</span>
       </span>
     ) as any;
+  } else if (isComplaints) {
+    title = 'Complaints';
+    subtitle = 'Manage external complaints submitted via the AI Agent.';
+  } else if (isInstructions) {
+    title = 'Installation Requests';
+    subtitle = 'Manage installation requests submitted via the AI Agent.';
   }
 
   return (

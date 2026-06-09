@@ -69,6 +69,10 @@ exports.getCurrentUser = async (req, res) => {
         email: customer.email,
         profileImage: customer.profileImage,
         subscriptionStatus: customer.subscriptionStatus,
+        moduleComplains: customer.moduleComplains,
+        moduleInstruction: customer.moduleInstruction,
+        moduleComplainsFields: customer.moduleComplainsFields,
+        moduleInstructionFields: customer.moduleInstructionFields,
         daysLeft
       });
     }
@@ -83,12 +87,17 @@ exports.getCurrentUser = async (req, res) => {
     const { TeamMember } = require('../models');
     const member = await TeamMember.findOne({ where: { username: req.user.username } });
     if (member) {
+      const customer = await Customer.findByPk(member.customerId);
       return res.json({
         ...req.user,
         name: member.fullName,
         email: member.username,
         role: 'TeamMember',
-        monthlyGoal: member.monthlyGoal
+        monthlyGoal: member.monthlyGoal,
+        moduleComplains: customer ? customer.moduleComplains : false,
+        moduleInstruction: customer ? customer.moduleInstruction : false,
+        moduleComplainsFields: customer ? customer.moduleComplainsFields : [],
+        moduleInstructionFields: customer ? customer.moduleInstructionFields : []
       });
     }
   }

@@ -37,7 +37,11 @@ const AddCustomer: React.FC = () => {
     instanceName: '',
     configApiKey: '',
     n8nWebhookUrl: '',
-    initialKnowledge: ''
+    initialKnowledge: '',
+    moduleComplains: false,
+    moduleInstruction: false,
+    moduleComplainsFields: ['fullName', 'phoneNumber', 'installationAddress', 'natureOfComplaint', 'issueContinuous', 'restartedRouter'],
+    moduleInstructionFields: ['fullName', 'phoneNumber', 'emailAddress', 'installationAddress', 'nearestLandmark', 'purposeOfUsage', 'ownsWifiDevice', 'wifiCoverageRequired', 'connectionType', 'expectedUsers', 'installationTimeline']
   });
 
   React.useEffect(() => {
@@ -57,7 +61,11 @@ const AddCustomer: React.FC = () => {
             instanceName: customer.instanceName || '',
             configApiKey: customer.configApiKey || '',
             n8nWebhookUrl: customer.n8nWebhookUrl || '',
-            initialKnowledge: customer.initialKnowledge || ''
+            initialKnowledge: customer.initialKnowledge || '',
+            moduleComplains: customer.moduleComplains || false,
+            moduleInstruction: customer.moduleInstruction || false,
+            moduleComplainsFields: customer.moduleComplainsFields || ['fullName', 'phoneNumber', 'installationAddress', 'natureOfComplaint', 'issueContinuous', 'restartedRouter'],
+            moduleInstructionFields: customer.moduleInstructionFields || ['fullName', 'phoneNumber', 'emailAddress', 'installationAddress', 'nearestLandmark', 'purposeOfUsage', 'ownsWifiDevice', 'wifiCoverageRequired', 'connectionType', 'expectedUsers', 'installationTimeline']
           });
         } catch (err) {
           console.error('Failed to load customer', err);
@@ -71,9 +79,48 @@ const AddCustomer: React.FC = () => {
   }, [id, isEditing]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value, type } = e.target;
+    if (type === 'checkbox') {
+      const checked = (e.target as HTMLInputElement).checked;
+      setFormData(prev => ({ ...prev, [name]: checked }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
+
+  const handleFieldChange = (module: 'moduleComplainsFields' | 'moduleInstructionFields', field: string, checked: boolean) => {
+    setFormData(prev => {
+      const currentFields = prev[module];
+      if (checked) {
+        return { ...prev, [module]: [...currentFields, field] };
+      } else {
+        return { ...prev, [module]: currentFields.filter(f => f !== field) };
+      }
+    });
+  };
+
+  const COMPLAINS_FIELDS = [
+    { id: 'fullName', label: 'Full Name' },
+    { id: 'phoneNumber', label: 'Phone Number' },
+    { id: 'installationAddress', label: 'Installation Address' },
+    { id: 'natureOfComplaint', label: 'Nature of Complaint' },
+    { id: 'issueContinuous', label: 'Continuous Issue?' },
+    { id: 'restartedRouter', label: 'Restarted Router?' }
+  ];
+
+  const INSTRUCTION_FIELDS = [
+    { id: 'fullName', label: 'Full Name' },
+    { id: 'phoneNumber', label: 'Phone Number' },
+    { id: 'emailAddress', label: 'Email Address' },
+    { id: 'installationAddress', label: 'Installation Address' },
+    { id: 'nearestLandmark', label: 'Nearest Landmark' },
+    { id: 'purposeOfUsage', label: 'Purpose of Usage' },
+    { id: 'ownsWifiDevice', label: 'Owns Wi-Fi Device?' },
+    { id: 'wifiCoverageRequired', label: 'Coverage Required' },
+    { id: 'connectionType', label: 'Connection Type' },
+    { id: 'expectedUsers', label: 'Expected Users' },
+    { id: 'installationTimeline', label: 'Installation Timeline' }
+  ];
 
   const handleNext = () => {
     if (step === 1) {
@@ -117,7 +164,7 @@ const AddCustomer: React.FC = () => {
       {!isEditing ? (
         <>
           <div className="step-indicator">
-            <span className="step-badge">Step {step} of 3</span>
+            <span className="step-badge">Step {step} of 4</span>
           </div>
 
           <div className="stepper-header">
@@ -133,9 +180,15 @@ const AddCustomer: React.FC = () => {
               </div>
               <div className="step-label">TECHNICAL CONFIG</div>
             </div>
-            <div className={`step-item ${step >= 3 ? 'active' : ''}`}>
+            <div className={`step-item ${step >= 3 ? 'active' : ''} ${step > 3 ? 'completed' : ''}`}>
               <div className="step-circle">
-                <span>3</span>
+                {step > 3 ? <Check size={20} /> : <span>3</span>}
+              </div>
+              <div className="step-label">SELECT MODULES</div>
+            </div>
+            <div className={`step-item ${step >= 4 ? 'active' : ''}`}>
+              <div className="step-circle">
+                <span>4</span>
               </div>
               <div className="step-label">INITIAL KNOWLEDGE</div>
             </div>
@@ -339,7 +392,92 @@ const AddCustomer: React.FC = () => {
                   </div>
                 </div>
 
+                {!isEditing && (
+                  <div className="button-group spread">
+                    <button type="button" className="btn-secondary" onClick={handleBack}>
+                      <ChevronLeft size={18} /> Back
+                    </button>
+                    <button type="button" className="btn-dark" onClick={handleNext}>
+                      Continue to Modules <ChevronRight size={18} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
+          {(step === 3 || isEditing) && (
+            <div className="step-content mb-2">
+              {!isEditing && (
+                <>
+                  <h1 className="step-title text-center">Select Modules</h1>
+                  <p className="step-subtitle text-center">Assign additional external features to this customer.</p>
+                </>
+              )}
+
+              <div className="white-box mt-2">
+                <div className="config-section">
+                  <div className="section-icon-bg purple"><Settings size={20} /></div>
+                  <div className="flex-1">
+                    <h3 className="config-title">External Modules</h3>
+                    <p className="config-desc">Assign additional features to this customer.</p>
+                    <div className="form-group" style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '10px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
+                          <input 
+                            type="checkbox" 
+                            name="moduleComplains" 
+                            checked={formData.moduleComplains} 
+                            onChange={handleChange} 
+                            style={{ width: '18px', height: '18px' }}
+                          />
+                          Complains Module
+                        </label>
+                        {formData.moduleComplains && (
+                          <div style={{ paddingLeft: '26px', display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                            {COMPLAINS_FIELDS.map(f => (
+                              <label key={f.id} style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontSize: '0.85rem', background: '#f5f5f5', padding: '4px 8px', borderRadius: '4px' }}>
+                                <input 
+                                  type="checkbox" 
+                                  checked={formData.moduleComplainsFields.includes(f.id)} 
+                                  onChange={e => handleFieldChange('moduleComplainsFields', f.id, e.target.checked)} 
+                                />
+                                {f.label}
+                              </label>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
+                          <input 
+                            type="checkbox" 
+                            name="moduleInstruction" 
+                            checked={formData.moduleInstruction} 
+                            onChange={handleChange} 
+                            style={{ width: '18px', height: '18px' }}
+                          />
+                          Instruction Module
+                        </label>
+                        {formData.moduleInstruction && (
+                          <div style={{ paddingLeft: '26px', display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                            {INSTRUCTION_FIELDS.map(f => (
+                              <label key={f.id} style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontSize: '0.85rem', background: '#f5f5f5', padding: '4px 8px', borderRadius: '4px' }}>
+                                <input 
+                                  type="checkbox" 
+                                  checked={formData.moduleInstructionFields.includes(f.id)} 
+                                  onChange={e => handleFieldChange('moduleInstructionFields', f.id, e.target.checked)} 
+                                />
+                                {f.label}
+                              </label>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
                 {!isEditing && (
                   <div className="button-group spread">
@@ -355,7 +493,7 @@ const AddCustomer: React.FC = () => {
             </div>
           )}
 
-          {(step === 3 || isEditing) && (
+          {(step === 4 || isEditing) && (
             <div className="step-content">
               {!isEditing && (
                 <>

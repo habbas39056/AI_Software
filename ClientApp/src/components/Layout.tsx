@@ -8,9 +8,11 @@ interface LayoutProps {
   role: 'Super Admin' | 'Client';
   userName: string;
   userProfileImage?: string;
+  moduleComplains?: boolean;
+  moduleInstruction?: boolean;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children, role, userName, userProfileImage }) => {
+const Layout: React.FC<LayoutProps> = ({ children, role, userName, userProfileImage, moduleComplains, moduleInstruction }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
@@ -39,7 +41,7 @@ const Layout: React.FC<LayoutProps> = ({ children, role, userName, userProfileIm
         </label>
       </header>
 
-      <Sidebar role={role} userName={userName} userProfileImage={userProfileImage} />
+      <Sidebar role={role} userName={userName} userProfileImage={userProfileImage} moduleComplains={moduleComplains} moduleInstruction={moduleInstruction} />
 
       <main className="main-content">
         <TopHeader role={role} userName={userName} />

@@ -18,6 +18,8 @@ import SuspendedScreen from './pages/SuspendedScreen';
 import SupportDocs from './pages/SupportDocs';
 import TeamMembers from './pages/TeamMembers';
 import Commissions from './pages/Commissions';
+import ExternalComplaints from './pages/ExternalComplaints';
+import ExternalInstructions from './pages/ExternalInstructions';
 import { authService } from './services/api';
 import './App.css';
 
@@ -77,7 +79,13 @@ function App() {
       {isSuspended ? (
         <SuspendedScreen />
       ) : (
-        <Layout role={user.role} userName={user.name} userProfileImage={user.profileImage}>
+        <Layout 
+          role={user.role} 
+          userName={user.name} 
+          userProfileImage={user.profileImage} 
+          moduleComplains={user.moduleComplains} 
+          moduleInstruction={user.moduleInstruction}
+        >
           <Routes>
             <Route path="/" element={user.role === 'Super Admin' ? <Dashboard /> : <ClientDashboard />} />
             <Route path="/clients" element={<Clients />} />
@@ -100,6 +108,8 @@ function App() {
             <Route path="/security" element={<Profile />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/support" element={<SupportDocs />} />
+            <Route path="/complaints" element={<ExternalComplaints />} />
+            <Route path="/instructions" element={<ExternalInstructions />} />
             <Route path="*" element={<Login />} />
           </Routes>
         </Layout>

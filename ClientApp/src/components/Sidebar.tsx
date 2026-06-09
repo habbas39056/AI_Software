@@ -13,7 +13,9 @@ import {
   HelpCircle, 
   LogOut,
   KanbanSquare,
-  DollarSign
+  DollarSign,
+  AlertTriangle,
+  FileText
 } from 'lucide-react';
 import { authService } from '../services/api';
 import './Sidebar.css';
@@ -22,9 +24,11 @@ interface SidebarProps {
   role: 'Super Admin' | 'Client' | 'TeamMember';
   userName: string;
   userProfileImage?: string;
+  moduleComplains?: boolean;
+  moduleInstruction?: boolean;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ role, userName, userProfileImage }) => {
+const Sidebar: React.FC<SidebarProps> = ({ role, userName, userProfileImage, moduleComplains, moduleInstruction }) => {
   const isSuperAdmin = role === 'Super Admin';
 
   const handleLogout = async (e: React.MouseEvent) => {
@@ -103,6 +107,18 @@ const Sidebar: React.FC<SidebarProps> = ({ role, userName, userProfileImage }) =
                   Billing & Plan
                 </NavLink>
               </>
+            )}
+            {moduleComplains && (
+              <NavLink to="/complaints" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                <AlertTriangle size={18} />
+                Complaints
+              </NavLink>
+            )}
+            {moduleInstruction && (
+              <NavLink to="/instructions" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                <FileText size={18} />
+                Installation Requests
+              </NavLink>
             )}
           </>
         )}

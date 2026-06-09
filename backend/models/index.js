@@ -5,6 +5,8 @@ const { Lead, LeadActivity, LeadPayment } = require('./Lead');
 const KnowledgeBase = require('./KnowledgeBase');
 const TeamMember = require('./TeamMember');
 const Instruction = require('./Instruction');
+const ExternalComplaint = require('./ExternalComplaint');
+const ExternalInstruction = require('./ExternalInstruction');
 
 // Associations
 Customer.hasMany(Agent, { foreignKey: 'customerId', as: 'agents' });
@@ -22,6 +24,12 @@ TeamMember.belongsTo(Customer, { foreignKey: 'customerId', as: 'customer' });
 Customer.hasMany(Instruction, { foreignKey: 'customerId', as: 'instructions' });
 Instruction.belongsTo(Customer, { foreignKey: 'customerId', as: 'customer' });
 
+Customer.hasMany(ExternalComplaint, { foreignKey: 'customerId', as: 'externalComplaints' });
+ExternalComplaint.belongsTo(Customer, { foreignKey: 'customerId', as: 'customer' });
+
+Customer.hasMany(ExternalInstruction, { foreignKey: 'customerId', as: 'externalInstructions' });
+ExternalInstruction.belongsTo(Customer, { foreignKey: 'customerId', as: 'customer' });
+
 module.exports = {
   sequelize,
   Customer,
@@ -32,4 +40,6 @@ module.exports = {
   KnowledgeBase,
   TeamMember,
   Instruction,
+  ExternalComplaint,
+  ExternalInstruction,
 };

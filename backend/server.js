@@ -12,6 +12,7 @@ const evolutionRoutes = require('./routes/evolutionRoutes');
 const teamRoutes = require('./routes/teamRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
 const instructionRoutes = require('./routes/instructionRoutes');
+const externalModulesRoutes = require('./routes/externalModulesRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -31,6 +32,7 @@ app.use('/api/evolution', evolutionRoutes);
 app.use('/api/team', teamRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/instructions', instructionRoutes);
+app.use('/api/external', externalModulesRoutes);
 
 // Serve Static Uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

@@ -64,6 +64,38 @@ const Customer = sequelize.define('Customer', {
     defaultValue: 'USD',
     field: 'Currency'
   },
+  moduleComplains: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    field: 'ModuleComplains'
+  },
+  moduleInstruction: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    field: 'ModuleInstruction'
+  },
+  moduleComplainsFields: {
+    type: DataTypes.TEXT,
+    field: 'ModuleComplainsFields',
+    get() {
+      const val = this.getDataValue('moduleComplainsFields');
+      return val ? JSON.parse(val) : [];
+    },
+    set(val) {
+      this.setDataValue('moduleComplainsFields', JSON.stringify(val || []));
+    }
+  },
+  moduleInstructionFields: {
+    type: DataTypes.TEXT,
+    field: 'ModuleInstructionFields',
+    get() {
+      const val = this.getDataValue('moduleInstructionFields');
+      return val ? JSON.parse(val) : [];
+    },
+    set(val) {
+      this.setDataValue('moduleInstructionFields', JSON.stringify(val || []));
+    }
+  },
   customServices: {
     type: DataTypes.TEXT,
     field: 'CustomServices',

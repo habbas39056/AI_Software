@@ -79,6 +79,22 @@ exports.createCustomer = async (req, res) => {
   }
 };
 
+exports.updateCustomer = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = req.body;
+    
+    const customer = await Customer.findByPk(id);
+    if (!customer) return res.status(404).json({ message: 'Customer not found' });
+
+    await customer.update(data);
+    res.json(customer);
+  } catch (error) {
+    console.error('FAILED TO UPDATE CUSTOMER:', error);
+    res.status(500).json({ message: error.message || 'Error updating customer' });
+  }
+};
+
 exports.deleteCustomer = async (req, res) => {
   try {
     const { id } = req.params;

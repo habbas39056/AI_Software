@@ -253,4 +253,40 @@ export const instructionsService = {
   },
 };
 
+export const externalModulesService = {
+  getComplaints: async () => {
+    const response = await api.get('/external/complaints');
+    return response.data;
+  },
+  createComplaint: async (data: any) => {
+    const response = await api.post('/external/complaints', data);
+    return response.data;
+  },
+  updateComplaint: async (id: number, data: any) => {
+    const response = await api.put(`/external/complaints/${id}`, data);
+    return response.data;
+  },
+  deleteComplaint: async (id: number) => {
+    const response = await api.delete(`/external/complaints/${id}`);
+    return response.data;
+  },
+
+  getInstructions: async () => {
+    const response = await api.get('/external/instructions');
+    return response.data;
+  },
+  createInstruction: async (data: any) => {
+    const response = await api.post('/external/instructions', data);
+    return response.data;
+  },
+  updateInstruction: async (id: number, data: any) => {
+    const response = await api.put(`/external/instructions/${id}`, data);
+    return response.data;
+  },
+  deleteInstruction: async (id: number) => {
+    const response = await api.delete(`/external/instructions/${id}`);
+    return response.data;
+  },
+};
+
 export default api;

@@ -8,6 +8,7 @@ router.use(authenticate);
 router.get('/dashboard', adminController.getDashboardData);
 router.get('/customers', adminController.getCustomers);
 router.post('/customers', adminController.createCustomer);
+router.put('/customers/:id', adminController.updateCustomer);
 router.delete('/customers/:id', adminController.deleteCustomer);
 router.get('/customers/:id', adminController.getCustomerDetails);
 router.post('/customers/:id/toggle-subscription', adminController.toggleSubscription);
