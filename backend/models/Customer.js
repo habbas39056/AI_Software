@@ -32,9 +32,21 @@ const Customer = sequelize.define('Customer', {
     type: DataTypes.STRING,
     field: 'InstanceName'
   },
+  configApiKey: {
+    type: DataTypes.STRING,
+    field: 'ConfigApiKey'
+  },
   n8nWebhookUrl: {
     type: DataTypes.STRING,
     field: 'N8nWebhookUrl'
+  },
+  instagramAccessToken: {
+    type: DataTypes.STRING(500), // tokens can be long
+    field: 'InstagramAccessToken'
+  },
+  instagramAccountId: {
+    type: DataTypes.STRING,
+    field: 'InstagramAccountId'
   },
   profileImage: {
     type: DataTypes.STRING,

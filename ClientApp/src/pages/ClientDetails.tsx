@@ -9,8 +9,10 @@ import {
   Ban, 
   CheckCircle,
   Zap,
+  Camera,
   Loader2
 } from 'lucide-react';
+import { instagramService } from '../services/api';
 import './ClientDetails.css';
 
 const ClientDetails: React.FC = () => {
@@ -20,6 +22,7 @@ const ClientDetails: React.FC = () => {
   const [qrLoading, setQrLoading] = useState(false);
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [renewDays, setRenewDays] = useState(30);
+  const [instaLoading, setInstaLoading] = useState(false);
 
   const fetchData = async () => {
     if (!id) return;
@@ -84,6 +87,22 @@ const ClientDetails: React.FC = () => {
       alert('System error connecting to Evolution bridge.');
     } finally {
       setQrLoading(false);
+    }
+  };
+
+  const connectInstagram = async () => {
+    if (!id) return;
+    setInstaLoading(true);
+    try {
+      const response = await instagramService.getAuthUrl(id);
+      if (response.url) {
+        window.location.href = response.url; // Redirect to Instagram OAuth
+      }
+    } catch (error) {
+      console.error('Instagram auth url failed:', error);
+      alert('Failed to initialize Instagram connection.');
+    } finally {
+      setInstaLoading(false);
     }
   };
 
@@ -193,6 +212,25 @@ const ClientDetails: React.FC = () => {
                 <button className="btn-text mt-1" onClick={generateQR}>Regenerate QR</button>
               </div>
             )}
+          </div>
+        </div>
+
+        <div className="white-box mt-2">
+          <h2 className="box-title">
+            <Camera size={20} className="text-pink" /> Instagram Agent Linking
+          </h2>
+          <div className="mt-1">
+            <p className="label mb-1">Status:</p>
+            <div className="instance-name-box">
+              {customer.instagramAccessToken ? (
+                <span className="text-success flex align-center"><CheckCircle size={14} className="mr-1" /> Connected</span>
+              ) : 'Not Connected'}
+            </div>
+          </div>
+          <div className="qr-section mt-2">
+            <button className="btn-primary w-full" onClick={connectInstagram} disabled={instaLoading}>
+              {instaLoading ? <Loader2 size={18} className="animate-spin" /> : 'Connect Instagram Agent'}
+            </button>
           </div>
         </div>
 

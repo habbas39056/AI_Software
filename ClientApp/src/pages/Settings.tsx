@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { clientService, evolutionService, instructionsService } from '../services/api';
-import { Zap, Loader2, Smartphone, FileText, Plus, Trash2, Edit2 } from 'lucide-react';
+import { clientService, evolutionService, instructionsService, instagramService } from '../services/api';
+import { Zap, Loader2, Smartphone, FileText, Plus, Trash2, Edit2, Camera, CheckCircle } from 'lucide-react';
 import './Settings.css';
 
 const Settings: React.FC = () => {
@@ -9,6 +9,7 @@ const Settings: React.FC = () => {
   const [qrLoading, setQrLoading] = useState(false);
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [status, setStatus] = useState<'open' | 'close' | 'connecting' | 'unknown'>('unknown');
+  const [instaLoading, setInstaLoading] = useState(false);
   
   // Scheduling state
   const [scheduleEnabled, setScheduleEnabled] = useState(false);
@@ -78,6 +79,24 @@ const Settings: React.FC = () => {
       alert('Connection error. Try again.');
     } finally {
       setQrLoading(false);
+    }
+  };
+
+  const handleConnectInstagram = async () => {
+    const customerId = data?.customer?.whatsAppNumber || data?.agents?.[0]?.customerId;
+    if (!customerId) return alert('No customer ID found to link Instagram.');
+    
+    setInstaLoading(true);
+    try {
+      const response = await instagramService.getAuthUrl(customerId);
+      if (response.url) {
+        window.location.href = response.url; // Redirect to Instagram OAuth
+      }
+    } catch (error) {
+      console.error('Instagram auth url failed:', error);
+      alert('Failed to initialize Instagram connection.');
+    } finally {
+      setInstaLoading(false);
     }
   };
 
@@ -326,6 +345,47 @@ const Settings: React.FC = () => {
                 <button className="btn-text mt-1" onClick={() => setQrCode(null)}>Cancel</button>
               </div>
             )}
+          </div>
+        </div>
+        )}
+
+        {/* Card 2B: Instagram AI Engine Sync */}
+        {activeTab === 'sync' && (
+        <div className="settings-card mt-2">
+          <div className="card-header">
+            <div className="card-title-group">
+              <div className="card-icon pink">
+                <Camera size={20} />
+              </div>
+              <div>
+                <h2 className="card-title">Instagram Engine Sync</h2>
+                <p className="card-subtitle">Connect your Instagram Business account</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="sync-content">
+            <div className="sync-placeholder" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <div className="sync-icon-large" style={{ color: '#ec4899', background: '#fdf2f8' }}>
+                <Camera size={28} />
+              </div>
+              <div className="mt-1">
+                {data?.customer?.instagramAccessToken ? (
+                  <span className="text-success flex align-center" style={{ fontWeight: 600, fontSize: '1.1rem' }}><CheckCircle size={18} className="mr-1" /> Connected to Meta</span>
+                ) : (
+                  <p>Click below to authorize your Instagram Business account via Meta.</p>
+                )}
+              </div>
+              
+              <button 
+                className="btn-primary mt-2" 
+                onClick={handleConnectInstagram} 
+                disabled={instaLoading}
+                style={{ width: '100%', maxWidth: '300px', background: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)', border: 'none' }}
+              >
+                {instaLoading ? <Loader2 size={18} className="animate-spin" /> : (data?.customer?.instagramAccessToken ? 'Reconnect Instagram' : 'Connect Instagram')}
+              </button>
+            </div>
           </div>
         </div>
         )}

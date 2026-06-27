@@ -13,6 +13,7 @@ const teamRoutes = require('./routes/teamRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
 const instructionRoutes = require('./routes/instructionRoutes');
 const externalModulesRoutes = require('./routes/externalModulesRoutes');
+const instagramRoutes = require('./routes/instagramRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -33,6 +34,7 @@ app.use('/api/team', teamRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/instructions', instructionRoutes);
 app.use('/api/external', externalModulesRoutes);
+app.use('/api/instagram', instagramRoutes);
 
 // Serve Static Uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -145,8 +147,8 @@ const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
 });
 
-sequelize.sync().then(async () => {
-  console.log('Database synced successfully');
+sequelize.sync({ alter: true }).then(async () => {
+  console.log('Database synced successfully with alter: true');
   
   // Create a MySQL trigger to automatically increment MessageCount whenever Summary changes.
   // This ensures the count increases even if N8N updates the DB directly bypassing the API.

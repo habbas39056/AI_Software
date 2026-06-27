@@ -289,4 +289,11 @@ export const externalModulesService = {
   },
 };
 
+export const instagramService = {
+  getAuthUrl: async (customerId: string) => {
+    const response = await api.get(`/instagram/auth?customerId=${customerId}`);
+    return response.data;
+  }
+};
+
 export default api;
