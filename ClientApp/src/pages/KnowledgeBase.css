@@ -52,6 +52,20 @@
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+@media (max-width: 768px) {
+  .kb-content {
+    max-width: 200px; /* Restrict width so it doesn't blow up the table */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+  }
+  
+  .kb-topic {
+    min-width: 120px; /* Ensure it has enough space to be readable when wrapping */
+  }
+}
+
 .glass-table tbody tr:hover {
   background: rgba(255, 255, 255, 0.02);
 }

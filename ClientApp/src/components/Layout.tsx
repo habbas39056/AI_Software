@@ -34,6 +34,9 @@ const Layout: React.FC<LayoutProps> = ({ children, role, userName, userProfileIm
             <img src="/logo.png" alt="Adwise Labs Ai Solutions" style={{ height: '32px', width: 'auto' }} />
           )}
         </div>
+        
+        <div id="mobile-agent-toggle-portal" style={{ flex: 1, display: 'flex', justifyContent: 'flex-end', paddingRight: '1rem' }}></div>
+
         <label htmlFor="sidebar-toggle" className="hamburger">
           <span></span>
           <span></span>

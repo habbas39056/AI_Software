@@ -62,10 +62,35 @@
     padding: 1rem;
     flex-direction: column;
     align-items: flex-start;
+    gap: 1rem;
   }
   
   .header-actions {
     width: 100%;
     justify-content: flex-start;
+  }
+
+  .desktop-toggle {
+    display: none !important;
+  }
+
+  .mobile-toggle {
+    display: flex !important;
+    transform: scale(0.65); /* Scale down for mobile header */
+    transform-origin: right center;
+    background: transparent !important; /* Match dark theme for the badge in mobile header */
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+  }
+  
+  .mobile-toggle span {
+    color: white !important;
+  }
+}
+
+/* Hide mobile toggle on desktop */
+@media (min-width: 769px) {
+  .mobile-toggle {
+    display: none !important;
   }
 }

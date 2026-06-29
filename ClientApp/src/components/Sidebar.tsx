@@ -42,6 +42,13 @@ const Sidebar: React.FC<SidebarProps> = ({ role, userName, userProfileImage, mod
     }
   };
 
+  const closeSidebar = () => {
+    const checkbox = document.getElementById('sidebar-toggle') as HTMLInputElement;
+    if (checkbox) {
+      checkbox.checked = false;
+    }
+  };
+
   return (
     <aside className="sidebar">
       <div className="brand">
@@ -52,70 +59,70 @@ const Sidebar: React.FC<SidebarProps> = ({ role, userName, userProfileImage, mod
       <nav>
         {isSuperAdmin ? (
           <>
-            <NavLink to="/" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+            <NavLink to="/" onClick={closeSidebar} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
               <LayoutDashboard size={18} />
               Dashboard
             </NavLink>
-            <NavLink to="/onboarding" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+            <NavLink to="/onboarding" onClick={closeSidebar} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
               <UserPlus size={18} />
               New AI Agent
             </NavLink>
-            <NavLink to="/clients" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+            <NavLink to="/clients" onClick={closeSidebar} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
               <Users size={18} />
               CRM & Clients
             </NavLink>
 
-            <NavLink to="/billing" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+            <NavLink to="/billing" onClick={closeSidebar} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
               <BarChart3 size={18} />
               Analytics & Billing
             </NavLink>
           </>
         ) : (
           <>
-            <NavLink to="/" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+            <NavLink to="/" onClick={closeSidebar} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
               <LayoutDashboard size={18} />
               Dashboard
             </NavLink>
             {role !== 'TeamMember' && (
               <>
-                <NavLink to="/knowledge-base" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                <NavLink to="/knowledge-base" onClick={closeSidebar} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                   <BookOpen size={18} />
                   Knowledge Base
                 </NavLink>
               </>
             )}
-            <NavLink to="/leads" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+            <NavLink to="/leads" onClick={closeSidebar} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
               <Users size={18} />
               Leads Center
             </NavLink>
-            <NavLink to="/pipeline" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+            <NavLink to="/pipeline" onClick={closeSidebar} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
               <KanbanSquare size={18} />
               Pipeline
             </NavLink>
             {role !== 'TeamMember' && (
               <>
-                <NavLink to="/commissions" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                <NavLink to="/commissions" onClick={closeSidebar} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                   <DollarSign size={18} />
                   Commissions
                 </NavLink>
-                <NavLink to="/team" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                <NavLink to="/team" onClick={closeSidebar} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                   <UsersRound size={18} />
                   Team Members
                 </NavLink>
-                <NavLink to="/billing" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                <NavLink to="/billing" onClick={closeSidebar} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                   <CreditCard size={18} />
                   Billing & Plan
                 </NavLink>
               </>
             )}
             {moduleComplains && (
-              <NavLink to="/complaints" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+              <NavLink to="/complaints" onClick={closeSidebar} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                 <AlertTriangle size={18} />
                 Complaints
               </NavLink>
             )}
             {moduleInstruction && (
-              <NavLink to="/instructions" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+              <NavLink to="/instructions" onClick={closeSidebar} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                 <FileText size={18} />
                 Installation Requests
               </NavLink>
@@ -129,23 +136,23 @@ const Sidebar: React.FC<SidebarProps> = ({ role, userName, userProfileImage, mod
       <div className="sidebar-heading" style={{ marginTop: '1.5rem' }}>SETTINGS</div>
       <nav>
         {isSuperAdmin ? (
-          <NavLink to="/security" className="nav-link">
+          <NavLink to="/security" onClick={closeSidebar} className="nav-link">
             <Lock size={18} />
             Security
           </NavLink>
         ) : (
           <>
-            <NavLink to="/profile" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+            <NavLink to="/profile" onClick={closeSidebar} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
               <Lock size={18} />
               Profile & Security
             </NavLink>
             {role !== 'TeamMember' && (
               <>
-                <NavLink to="/settings" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                <NavLink to="/settings" onClick={closeSidebar} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                   <Settings size={18} />
                   Agent Config
                 </NavLink>
-                <NavLink to="/support" className="nav-link">
+                <NavLink to="/support" onClick={closeSidebar} className="nav-link">
                   <HelpCircle size={18} />
                   Support Docs
                 </NavLink>

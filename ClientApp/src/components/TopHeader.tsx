@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Play, ToggleLeft, ToggleRight, Power } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import LeadRunnerModal from './LeadRunnerModal';
@@ -152,6 +153,23 @@ const TopHeader: React.FC<TopHeaderProps> = ({ role, userName, dateString }) => 
     subtitle = 'Manage installation requests submitted via the AI Agent.';
   }
 
+  const toggleButton = (className: string) => (
+    <div className={`agent-toggle-container ${className}`} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: !isAgentActive ? 'rgba(248, 113, 113, 0.1)' : isScheduledAsleep ? 'rgba(251, 191, 36, 0.1)' : 'rgba(59, 130, 246, 0.1)', padding: '6px 14px', borderRadius: '30px', border: `2px solid ${!isAgentActive ? '#f87171' : isScheduledAsleep ? '#f59e0b' : '#3b82f6'}`, boxShadow: !isAgentActive ? '0 0 10px rgba(248, 113, 113, 0.2)' : isScheduledAsleep ? '0 0 10px rgba(251, 191, 36, 0.2)' : '0 0 10px rgba(59, 130, 246, 0.2)', transition: 'all 0.3s ease' }}>
+      <Power size={18} color={!isAgentActive ? '#f87171' : isScheduledAsleep ? '#f59e0b' : '#3b82f6'} />
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '1px', color: '#000', fontWeight: 600 }}>Agent Status</span>
+        <span style={{ fontSize: '1rem', fontWeight: 800, color: !isAgentActive ? '#f87171' : isScheduledAsleep ? '#f59e0b' : '#3b82f6', lineHeight: '1.2' }}>{!isAgentActive ? 'OFFLINE' : isScheduledAsleep ? 'ASLEEP' : 'ONLINE'}</span>
+      </div>
+      <button 
+        onClick={handleToggleAgent}
+        style={{ background: 'none', border: 'none', color: isAgentActive ? (isScheduledAsleep ? '#f59e0b' : '#3b82f6') : '#f87171', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0, marginLeft: '4px' }}
+        title={isAgentActive ? 'Click to Manually Kill Agent' : 'Click to Revive Agent'}
+      >
+        {isAgentActive ? <ToggleRight size={32} /> : <ToggleLeft size={32} />}
+      </button>
+    </div>
+  );
+
   return (
     <div className="top-header">
       <div className="header-title">
@@ -160,22 +178,7 @@ const TopHeader: React.FC<TopHeaderProps> = ({ role, userName, dateString }) => 
       </div>
 
       <div className="header-actions">
-        {role !== 'Super Admin' && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: !isAgentActive ? 'rgba(248, 113, 113, 0.1)' : isScheduledAsleep ? 'rgba(251, 191, 36, 0.1)' : 'rgba(59, 130, 246, 0.1)', padding: '6px 14px', borderRadius: '30px', border: `2px solid ${!isAgentActive ? '#f87171' : isScheduledAsleep ? '#f59e0b' : '#3b82f6'}`, boxShadow: !isAgentActive ? '0 0 10px rgba(248, 113, 113, 0.2)' : isScheduledAsleep ? '0 0 10px rgba(251, 191, 36, 0.2)' : '0 0 10px rgba(59, 130, 246, 0.2)', transition: 'all 0.3s ease' }}>
-            <Power size={18} color={!isAgentActive ? '#f87171' : isScheduledAsleep ? '#f59e0b' : '#3b82f6'} />
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '1px', color: '#000', fontWeight: 600 }}>Agent Status</span>
-              <span style={{ fontSize: '1rem', fontWeight: 800, color: !isAgentActive ? '#f87171' : isScheduledAsleep ? '#f59e0b' : '#3b82f6', lineHeight: '1.2' }}>{!isAgentActive ? 'OFFLINE' : isScheduledAsleep ? 'ASLEEP' : 'ONLINE'}</span>
-            </div>
-            <button 
-              onClick={handleToggleAgent}
-              style={{ background: 'none', border: 'none', color: isAgentActive ? (isScheduledAsleep ? '#f59e0b' : '#3b82f6') : '#f87171', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 0, marginLeft: '4px' }}
-              title={isAgentActive ? 'Click to Manually Kill Agent' : 'Click to Revive Agent'}
-            >
-              {isAgentActive ? <ToggleRight size={32} /> : <ToggleLeft size={32} />}
-            </button>
-          </div>
-        )}
+        {role !== 'Super Admin' && toggleButton('desktop-toggle')}
 
         {isTeamMember && (
           <button 
@@ -188,6 +191,10 @@ const TopHeader: React.FC<TopHeaderProps> = ({ role, userName, dateString }) => 
           </button>
         )}
       </div>
+
+      {role !== 'Super Admin' && document.getElementById('mobile-agent-toggle-portal') 
+        ? createPortal(toggleButton('mobile-toggle'), document.getElementById('mobile-agent-toggle-portal')!)
+        : null}
 
       {isRunnerOpen && (
         <LeadRunnerModal 
