@@ -420,6 +420,10 @@
 .text-muted { color: var(--text-muted); }
 .block { width: 100%; }
 
+@media (max-width: 768px) {
+  /* Using glass-table-container for table responsiveness instead of breaking table display */
+}
+
 @media (max-width: 600px) {
   .form-row { grid-template-columns: 1fr; }
   .filter-selects { flex-wrap: wrap; }

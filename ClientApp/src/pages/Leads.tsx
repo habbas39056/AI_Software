@@ -3,6 +3,7 @@ import { useParams, Link, useLocation, useNavigate } from 'react-router-dom';
 import { leadsService, adminService, clientService, teamService, authService } from '../services/api';
 import { ArrowLeft, Plus, X, Eye, Phone, Mail, Users, StickyNote, CalendarClock, Trash2, Edit2, Search, ToggleLeft, ToggleRight } from 'lucide-react';
 import { formatCurrency } from '../utils/currencyUtils';
+import Pagination from '../components/Pagination';
 import './Leads.css';
 
 const STATUS_OPTIONS = ['New', 'Contacted', 'Qualified', 'Proposal', 'Negotiation', 'Won', 'Lost'];
@@ -31,6 +32,10 @@ const Leads: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('All Status');
   const [assignedFilter, setAssignedFilter] = useState('All Team');
   const [serviceFilter, setServiceFilter] = useState('All Services');
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   // Modals
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -111,6 +116,17 @@ const Leads: React.FC = () => {
     const matchesService = serviceFilter === 'All Services' || l.service === serviceFilter;
     return matchesSearch && matchesStatus && matchesAssigned && matchesService;
   });
+
+  // Reset pagination to 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, statusFilter, assignedFilter, serviceFilter]);
+
+  // Compute current page items
+  const totalPages = Math.ceil(filteredLeads.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentLeads = filteredLeads.slice(indexOfFirstItem, indexOfLastItem);
 
   // ── Handlers ──
   const resetForm = () => {
@@ -313,9 +329,9 @@ const Leads: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredLeads.length === 0 ? (
+              {currentLeads.length === 0 ? (
                 <tr><td colSpan={8} className="empty-state">No leads found.</td></tr>
-              ) : filteredLeads.map((lead) => (
+              ) : currentLeads.map((lead) => (
                 <tr key={lead.id} className={lead.isPaused ? 'row-inactive' : ''}>
                   <td className="lead-client-cell">
                     <div className="lead-client-name">{lead.name || 'Unnamed'}</div>
@@ -344,6 +360,11 @@ const Leads: React.FC = () => {
             </tbody>
           </table>
         </div>
+        <Pagination 
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
       </div>
 
       {/* ── Add / Edit Lead Full Form (matching screenshot) ── */}

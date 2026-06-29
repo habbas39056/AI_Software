@@ -153,13 +153,13 @@ const TopHeader: React.FC<TopHeaderProps> = ({ role, userName, dateString }) => 
   }
 
   return (
-    <div className="top-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <div className="top-header">
       <div className="header-title">
         <h1>{title}</h1>
         <p>{subtitle}</p>
       </div>
 
-      <div className="header-actions" style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+      <div className="header-actions">
         {role !== 'Super Admin' && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: !isAgentActive ? 'rgba(248, 113, 113, 0.1)' : isScheduledAsleep ? 'rgba(251, 191, 36, 0.1)' : 'rgba(59, 130, 246, 0.1)', padding: '6px 14px', borderRadius: '30px', border: `2px solid ${!isAgentActive ? '#f87171' : isScheduledAsleep ? '#f59e0b' : '#3b82f6'}`, boxShadow: !isAgentActive ? '0 0 10px rgba(248, 113, 113, 0.2)' : isScheduledAsleep ? '0 0 10px rgba(251, 191, 36, 0.2)' : '0 0 10px rgba(59, 130, 246, 0.2)', transition: 'all 0.3s ease' }}>
             <Power size={18} color={!isAgentActive ? '#f87171' : isScheduledAsleep ? '#f59e0b' : '#3b82f6'} />

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { teamService } from '../services/api';
 import { X, Edit2, Trash2, Search, UserPlus, ToggleLeft, ToggleRight } from 'lucide-react';
+import Pagination from '../components/Pagination';
 import './TeamMembers.css';
 
 const ROLE_OPTIONS = ['Sales', 'Manager', 'Support', 'Admin', 'Marketing'];
@@ -10,6 +11,10 @@ const TeamMembers: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('All Roles');
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   // Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -38,6 +43,17 @@ const TeamMembers: React.FC = () => {
     const matchesRole = roleFilter === 'All Roles' || m.role === roleFilter;
     return matchesSearch && matchesRole;
   });
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, roleFilter]);
+
+  // Compute current page items
+  const totalPages = Math.ceil(filteredMembers.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentMembers = filteredMembers.slice(indexOfFirstItem, indexOfLastItem);
 
   const resetForm = () => {
     setForm({ fullName: '', username: '', password: '', role: 'Sales', phone: '', monthlyGoal: '500000', commission: '10', targetBonus: '10000' });
@@ -166,9 +182,9 @@ const TeamMembers: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredMembers.length === 0 ? (
+              {currentMembers.length === 0 ? (
                 <tr><td colSpan={8} className="empty-state">No team members found.</td></tr>
-              ) : filteredMembers.map(m => (
+              ) : currentMembers.map(m => (
                 <tr key={m.id} className={!m.isActive ? 'row-inactive' : ''}>
                   <td className="member-cell">
                     <div className="member-avatar">{(m.fullName || '?')[0].toUpperCase()}</div>
@@ -199,6 +215,11 @@ const TeamMembers: React.FC = () => {
             </tbody>
           </table>
         </div>
+        <Pagination 
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
       </div>
 
       {/* Add / Edit Modal */}

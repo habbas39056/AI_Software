@@ -26,13 +26,24 @@
   --accent-red: var(--brand-red);
 }
 
+html {
+  overflow-x: hidden;
+}
+
 body {
   margin: 0;
   font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
   background-color: var(--main-bg);
   color: var(--text-primary);
   min-height: 100vh;
+  overflow-x: hidden;
   box-sizing: border-box;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 *, *::before, *::after {

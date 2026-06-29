@@ -56,3 +56,16 @@
   transform: translateY(1px);
   box-shadow: 0 2px 4px rgba(234, 88, 12, 0.2);
 }
+
+@media (max-width: 768px) {
+  .top-header {
+    padding: 1rem;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .header-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}

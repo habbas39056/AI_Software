@@ -1,12 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { teamService, clientService } from '../services/api';
 import { formatCurrency } from '../utils/currencyUtils';
+import Pagination from '../components/Pagination';
 import './Commissions.css';
 
 const Commissions: React.FC = () => {
   const [commissions, setCommissions] = useState<any[]>([]);
   const [currency, setCurrency] = useState<string>('USD');
   const [loading, setLoading] = useState(true);
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -28,6 +33,12 @@ const Commissions: React.FC = () => {
 
   const totalPayments = commissions.reduce((sum, c) => sum + (c.payment || 0), 0);
   const totalCommissions = commissions.reduce((sum, c) => sum + (c.commission || 0), 0);
+
+  // Compute current page items
+  const totalPages = Math.ceil(commissions.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentCommissions = commissions.slice(indexOfFirstItem, indexOfLastItem);
 
   if (loading) return <div className="loading">Loading Commissions...</div>;
 
@@ -63,12 +74,12 @@ const Commissions: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {commissions.length === 0 ? (
+              {currentCommissions.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="empty-state">No commissions</td>
                 </tr>
               ) : (
-                commissions.map((c, index) => (
+                currentCommissions.map((c, index) => (
                   <tr key={`${c.id}-${index}`}>
                     <td className="font-medium text-slate-800">{c.agent}</td>
                     <td className="text-slate-600">{c.client}</td>
@@ -83,6 +94,11 @@ const Commissions: React.FC = () => {
             </tbody>
           </table>
         </div>
+        <Pagination 
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
       </div>
     </div>
   );

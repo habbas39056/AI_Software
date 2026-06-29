@@ -377,3 +377,16 @@
 .flex { display: flex; }
 .justify-between { justify-content: space-between; }
 .items-center { align-items: center; }
+
+@media (max-width: 768px) {
+  .agent-status-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .instance-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+}

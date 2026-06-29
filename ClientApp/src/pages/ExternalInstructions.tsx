@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { externalModulesService, authService } from '../services/api';
 import { X, Edit2, Trash2, Plus, ArrowLeft, Search } from 'lucide-react';
+import Pagination from '../components/Pagination';
 import '../pages/Leads.css'; // Importing leads CSS to reuse the layout styles
 import './ExternalModules.css';
 
@@ -10,6 +11,10 @@ const ExternalInstructions: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [user, setUser] = useState<any>(null);
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -125,6 +130,17 @@ const ExternalInstructions: React.FC = () => {
     );
   });
 
+  // Reset pagination when search query changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
+  // Compute current page items
+  const totalPages = Math.ceil(filteredInstructions.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentInstructions = filteredInstructions.slice(indexOfFirstItem, indexOfLastItem);
+
   if (loading) return <div className="loading">Loading installation requests...</div>;
 
   return (
@@ -173,12 +189,12 @@ const ExternalInstructions: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredInstructions.length === 0 ? (
+              {currentInstructions.length === 0 ? (
                 <tr>
                   <td colSpan={13} className="empty-state">No installation requests found.</td>
                 </tr>
               ) : (
-                filteredInstructions.map(inst => (
+                currentInstructions.map(inst => (
                   <tr key={inst.id}>
                     <td>{new Date(inst.createdAt).toLocaleString()}</td>
                     {isFieldAllowed('fullName') && <td>{inst.fullName}</td>}
@@ -204,6 +220,11 @@ const ExternalInstructions: React.FC = () => {
             </tbody>
           </table>
         </div>
+        <Pagination 
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
       </div>
 
       {isModalOpen && (

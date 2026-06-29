@@ -19,7 +19,7 @@ const Settings: React.FC = () => {
   const [savingSchedule, setSavingSchedule] = useState(false);
 
   // Tabs state
-  const [activeTab, setActiveTab] = useState<'scheduling' | 'sync' | 'instructions'>('scheduling');
+  const [activeTab, setActiveTab] = useState<'scheduling' | 'sync' | 'insta_sync' | 'instructions'>('scheduling');
 
   // Instructions state
   const [instructions, setInstructions] = useState<{id: number, title: string, content: string}[]>([]);
@@ -204,6 +204,22 @@ const Settings: React.FC = () => {
           style={{ 
             background: 'none', 
             border: 'none', 
+            borderBottom: activeTab === 'insta_sync' ? '2px solid #2563eb' : '2px solid transparent', 
+            padding: '0.5rem 0.5rem 0.75rem 0.5rem', 
+            fontSize: '0.95rem', 
+            fontWeight: 500, 
+            color: activeTab === 'insta_sync' ? '#2563eb' : '#64748b',
+            cursor: 'pointer',
+            transition: 'all 0.2s'
+          }}
+          onClick={() => setActiveTab('insta_sync')}
+        >
+          Instagram Engine Sync
+        </button>
+        <button 
+          style={{ 
+            background: 'none', 
+            border: 'none', 
             borderBottom: activeTab === 'instructions' ? '2px solid #2563eb' : '2px solid transparent', 
             padding: '0.5rem 0.5rem 0.75rem 0.5rem', 
             fontSize: '0.95rem', 
@@ -350,8 +366,8 @@ const Settings: React.FC = () => {
         )}
 
         {/* Card 2B: Instagram AI Engine Sync */}
-        {activeTab === 'sync' && (
-        <div className="settings-card mt-2">
+        {activeTab === 'insta_sync' && (
+        <div className="settings-card">
           <div className="card-header">
             <div className="card-title-group">
               <div className="card-icon pink">

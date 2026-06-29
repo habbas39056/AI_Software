@@ -2,11 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { adminService } from '../services/api';
 import { Mail, Phone, Eye, Edit, Trash2, Plus, User } from 'lucide-react';
+import Pagination from '../components/Pagination';
 import './Clients.css';
 
 const Clients: React.FC = () => {
   const [customers, setCustomers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const fetchCustomers = async () => {
     try {
@@ -35,6 +40,12 @@ const Clients: React.FC = () => {
     }
   };
 
+  // Compute current page items
+  const totalPages = Math.ceil(customers.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentCustomers = customers.slice(indexOfFirstItem, indexOfLastItem);
+
   if (loading) return <div className="loading">Loading clients...</div>;
 
   return (
@@ -60,14 +71,14 @@ const Clients: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {customers.length === 0 ? (
+              {currentCustomers.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="empty-state">
                     No clients installed. Go to Onboard New Client to begin.
                   </td>
                 </tr>
               ) : (
-                customers.map((c) => (
+                currentCustomers.map((c) => (
                   <tr key={c.whatsAppNumber}>
                     <td>
                       <div className="customer-identity">
@@ -120,6 +131,11 @@ const Clients: React.FC = () => {
             </tbody>
           </table>
         </div>
+        <Pagination 
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
       </div>
     </div>
   );

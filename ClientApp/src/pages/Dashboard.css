@@ -135,6 +135,7 @@
   border-radius: 12px;
   padding: 1.5rem;
   margin-bottom: 1.5rem;
+  min-width: 0; /* Prevents grid blowout on small screens */
 }
 
 .box-title {
@@ -170,6 +171,38 @@
   border-bottom: 1px solid var(--card-border);
   color: var(--text-primary);
   font-size: 0.9rem;
+}
+
+.glass-table-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+  .stat-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+  
+  .stat-card {
+    padding: 1rem;
+  }
+
+  .stat-value {
+    font-size: 1.25rem;
+  }
+  
+  .stat-title {
+    font-size: 0.7rem;
+  }
+
+  .white-box {
+    padding: 1rem;
+  }
+  
+  .glass-table {
+    white-space: nowrap;
+  }
 }
 
 .badge {

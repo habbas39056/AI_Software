@@ -76,8 +76,9 @@
 }
 
 .user-avatar {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
   border-radius: 50%;
   background: #333;
   position: relative;
@@ -92,4 +93,23 @@
   background: var(--brand-green);
   border-radius: 50%;
   border: 2px solid var(--sidebar-bg);
+}
+
+@media (max-height: 600px) {
+  .sidebar {
+    padding: 1rem 0.5rem;
+  }
+  .brand {
+    margin-bottom: 1rem;
+  }
+  .nav-link {
+    padding: 0.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 280px; /* Slightly wider on mobile for better touch targets */
+    z-index: 1010; /* Ensure it covers the mobile header */
+  }
 }
