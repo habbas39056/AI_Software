@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const { Lead, LeadActivity, LeadPayment } = require('../models');
 const authenticate = require('../middleware/auth');
+const xlsx = require('xlsx');
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage() });
 
 router.use(authenticate);
 
@@ -278,6 +281,150 @@ router.delete('/payment/:paymentId', async (req, res) => {
     res.json({ message: 'Payment deleted' });
   } catch (error) {
     res.status(500).json({ message: 'Error deleting payment' });
+  }
+});
+
+// EXPORT leads to Excel
+router.get('/export/:customerId', async (req, res) => {
+  try {
+    const { Op } = require('sequelize');
+    const { customerId } = req.params;
+    let whereClause = {};
+    
+    if (customerId && customerId !== 'all') {
+      whereClause.customerId = customerId;
+    }
+
+    if (req.user.role === 'Client') {
+      whereClause.customerId = req.user.customerId;
+    } else if (req.user.role === 'TeamMember') {
+      whereClause = {
+        ...whereClause,
+        [Op.or]: [
+          { assignedTo: req.user.username },
+          { assignedTo: req.user.name },
+          { assignedTo: 'AI Agent' },
+          { assignedTo: null },
+          { assignedTo: '' }
+        ]
+      };
+    }
+
+    const leads = await Lead.findAll({
+      where: whereClause,
+      order: [['lastMessageAt', 'DESC']]
+    });
+
+    // We deduplicate by phoneNumber to match the GET /all logic
+    const seenPhones = new Set();
+    const uniqueLeads = leads.filter(l => {
+      if (!l.phoneNumber) return true;
+      if (seenPhones.has(l.phoneNumber)) return false;
+      seenPhones.add(l.phoneNumber);
+      return true;
+    });
+
+    const exportData = uniqueLeads.map(l => ({
+      'Name': l.name || '',
+      'Business Name': l.businessName || '',
+      'Phone Number': l.phoneNumber || '',
+      'Email': l.email || '',
+      'Service': l.service || '',
+      'Deal Value': l.dealValue || 0,
+      'Status': l.status || '',
+      'Assigned To': l.assignedTo || '',
+      'Follow-up Date': l.followUpDate ? l.followUpDate.toISOString().split('T')[0] : '',
+      'City': l.city || '',
+      'Loss Reason': l.lossReason || '',
+      'Summary': l.summary || '',
+      'Created At': l.createdAt ? l.createdAt.toISOString().split('T')[0] : ''
+    }));
+
+    const worksheet = xlsx.utils.json_to_sheet(exportData);
+    const workbook = xlsx.utils.book_new();
+    xlsx.utils.book_append_sheet(workbook, worksheet, 'Leads');
+
+    const buffer = xlsx.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+
+    res.setHeader('Content-Disposition', 'attachment; filename="leads_export.xlsx"');
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.send(buffer);
+  } catch (error) {
+    console.error('Error exporting leads:', error);
+    res.status(500).json({ message: 'Error exporting leads' });
+  }
+});
+
+// IMPORT leads from Excel
+router.post('/import/:customerId', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
+
+    const customerId = req.params.customerId !== 'all' ? req.params.customerId : req.user.customerId;
+    if (!customerId) return res.status(400).json({ message: 'Customer ID is required for import' });
+
+    const workbook = xlsx.read(req.file.buffer, { type: 'buffer' });
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+    const rows = xlsx.utils.sheet_to_json(worksheet);
+
+    let importedCount = 0;
+    let updatedCount = 0;
+
+    for (const row of rows) {
+      const phoneNumber = String(row['Phone Number'] || row['phone'] || row['phoneNumber'] || row['WhatsApp'] || '').trim();
+      const name = String(row['Name'] || row['name'] || '').trim();
+      if (!phoneNumber) continue; // Skip rows without phone number
+
+      const summary = row['Summary'] || row['Notes'] || row['notes'];
+      const status = row['Status'] || row['status'] || 'New';
+      const email = row['Email'] || row['email'];
+      const businessName = row['Business Name'] || row['businessName'];
+      const service = row['Service'] || row['service'];
+      const dealValue = row['Deal Value'] || row['dealValue'] || 0;
+      const assignedTo = row['Assigned To'] || row['assignedTo'];
+      const city = row['City'] || row['city'];
+
+      let existingLead = await Lead.findOne({ where: { phoneNumber, customerId } });
+
+      if (existingLead) {
+        await existingLead.update({
+          name: name || existingLead.name,
+          email: email || existingLead.email,
+          businessName: businessName || existingLead.businessName,
+          service: service || existingLead.service,
+          dealValue: dealValue || existingLead.dealValue,
+          status: status || existingLead.status,
+          assignedTo: assignedTo || existingLead.assignedTo,
+          city: city || existingLead.city,
+          summary: summary || existingLead.summary
+        });
+        updatedCount++;
+      } else {
+        await Lead.create({
+          customerId,
+          phoneNumber,
+          name,
+          email,
+          businessName,
+          service,
+          dealValue,
+          status,
+          assignedTo,
+          city,
+          summary,
+          lastMessageAt: new Date(),
+          isPaused: false,
+          messageCount: 1
+        });
+        importedCount++;
+      }
+    }
+
+    res.json({ message: `Import successful. ${importedCount} created, ${updatedCount} updated.`, importedCount, updatedCount });
+  } catch (error) {
+    console.error('Error importing leads:', error);
+    res.status(500).json({ message: 'Error importing leads' });
   }
 });
 

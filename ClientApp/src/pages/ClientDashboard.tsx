@@ -155,7 +155,7 @@ const ClientDashboard: React.FC = () => {
       <div className="main-grid mt-2">
         <div className="white-box">
           <h2 className="box-title mb-2"><Activity size={20} className="text-blue" /> Leads Over Time (All Time)</h2>
-          <div style={{ width: '100%', height: 250, display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-start', gap: '8px', padding: '20px 10px', paddingBottom: '30px', position: 'relative', overflowX: 'auto' }}>
+          <div className="leads-chart-container">
             {chartData.length > 0 ? chartData.map((d, index) => {
               const maxLeads = Math.max(...chartData.map(c => c.leads), 1);
               const heightPercent = (d.leads / maxLeads) * 100;
@@ -163,7 +163,7 @@ const ClientDashboard: React.FC = () => {
                 <div 
                   key={index} 
                   title={`${d.name} — ${d.leads} lead${d.leads !== 1 ? 's' : ''}`}
-                  style={{ width: '60px', flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', cursor: 'pointer' }}
+                  className="leads-chart-bar-wrap"
                 >
                   <div style={{ flex: 1, width: '100%', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
                     <div 

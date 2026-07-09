@@ -177,17 +177,90 @@
   text-align: center;
 }
 
+.mobile-top-section {
+  display: none;
+}
+
 @media (max-width: 800px) {
   .login-page {
     flex-direction: column;
+    background: linear-gradient(135deg, #1f2f5c 0%, #293f75 100%);
   }
   
   .login-left {
-    display: none; /* Hide branding on very small screens for simplicity, or just shrink it */
+    display: none;
+  }
+
+  .mobile-top-section {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4rem 2rem 3rem 2rem;
+    color: white;
+  }
+
+  .mobile-top-logo {
+    max-width: 140px;
+    margin-bottom: 0;
+  }
+
+  .mobile-top-section h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin: 0;
   }
 
   .login-right {
     width: 100%;
     flex: 1;
+    background: #ffffff;
+    border-radius: 40px 40px 0 0;
+    justify-content: flex-start;
+    padding-top: 1.5rem;
+  }
+
+  .login-title, .login-subtitle {
+    display: none;
+  }
+
+  .login-form-container {
+    padding: 2rem 2rem 4rem 2rem;
+    max-width: 100%;
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-label {
+    color: #1f2f5c;
+    font-size: 0.85rem;
+    margin-bottom: 0.2rem;
+  }
+
+  .plain-input {
+    border: none;
+    border-bottom: 1px solid #cbd5e1;
+    border-radius: 0;
+    padding: 0.5rem 0;
+    font-size: 1rem;
+    background: transparent;
+  }
+
+  .plain-input:focus {
+    box-shadow: none;
+    border-bottom: 2px solid #ea580c;
+  }
+
+  .btn-login {
+    border-radius: 30px;
+    padding: 1rem;
+    margin-top: 1.5rem;
+    font-size: 1.1rem;
+    box-shadow: 0 8px 20px rgba(234, 88, 12, 0.25);
   }
 }
+
+

@@ -137,6 +137,18 @@ export const leadsService = {
     const response = await api.delete(`/leads/payment/${paymentId}`);
     return response.data;
   },
+  exportExcel: async (customerId: string) => {
+    const response = await api.get(`/leads/export/${customerId || 'all'}`, { responseType: 'blob' });
+    return response.data;
+  },
+  importExcel: async (customerId: string, file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await api.post(`/leads/import/${customerId || 'all'}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return response.data;
+  },
 };
 
 export const authService = {

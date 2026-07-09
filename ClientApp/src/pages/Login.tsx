@@ -63,6 +63,11 @@ const Login: React.FC = () => {
         </div>
       </div>
 
+      <div className="mobile-top-section">
+        <h1>Hello<br />Sign in!</h1>
+        <img src="/logo.png" alt="Adwise Labs" className="mobile-top-logo" />
+      </div>
+
       <div className="login-right">
         <div className="login-form-container">
           <h2 className="login-title">CRM Login</h2>

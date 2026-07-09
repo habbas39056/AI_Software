@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useLocation, useNavigate } from 'react-router-dom';
 import { leadsService, adminService, clientService, teamService, authService } from '../services/api';
-import { ArrowLeft, Plus, X, Eye, Phone, Mail, Users, StickyNote, CalendarClock, Trash2, Edit2, Search, ToggleLeft, ToggleRight } from 'lucide-react';
+import { ArrowLeft, Plus, X, Eye, Phone, Mail, Users, StickyNote, CalendarClock, Trash2, Edit2, Search, ToggleLeft, ToggleRight, Download, Upload } from 'lucide-react';
 import { formatCurrency } from '../utils/currencyUtils';
 import Pagination from '../components/Pagination';
 import './Leads.css';
@@ -26,6 +26,11 @@ const Leads: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [serviceOptions, setServiceOptions] = useState<string[]>(DEFAULT_SERVICE_OPTIONS);
   const [loading, setLoading] = useState(true);
+
+  // Import/Export State
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [isImporting, setIsImporting] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -263,6 +268,45 @@ const Leads: React.FC = () => {
     } catch (error) { console.error('Failed to log activity:', error); }
   };
 
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const targetId = id || customer?.whatsAppNumber || 'all';
+      const blob = await leadsService.exportExcel(targetId);
+      const url = window.URL.createObjectURL(new Blob([blob]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'leads_export.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+    } catch (error) {
+      console.error('Failed to export leads:', error);
+      alert('Failed to export leads');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsImporting(true);
+    try {
+      const targetId = id || customer?.whatsAppNumber || 'all';
+      const result = await leadsService.importExcel(targetId, file);
+      alert(result.message);
+      fetchData(); // Refresh leads
+    } catch (error) {
+      console.error('Failed to import leads:', error);
+      alert('Failed to import leads');
+    } finally {
+      setIsImporting(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   const openViewModal = (lead: any) => { setSelectedLead(lead); setIsViewModalOpen(true); };
 
   const getStatusClass = (status: string) => {
@@ -309,7 +353,22 @@ const Leads: React.FC = () => {
             {uniqueServices.map(s => <option key={s}>{s}</option>)}
           </select>
         </div>
-        <button className="btn-primary" onClick={openAddForm}><Plus size={16} /> Add Lead</button>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <button className="btn-secondary" onClick={handleExport} disabled={isExporting} title="Export to Excel">
+            <Download size={16} /> <span className="hide-on-mobile">{isExporting ? 'Exporting...' : 'Export'}</span>
+          </button>
+          <button className="btn-secondary" onClick={() => fileInputRef.current?.click()} disabled={isImporting} title="Import from Excel">
+            <Upload size={16} /> <span className="hide-on-mobile">{isImporting ? 'Importing...' : 'Import'}</span>
+          </button>
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            style={{ display: 'none' }} 
+            accept=".xlsx, .xls"
+            onChange={handleImport}
+          />
+          <button className="btn-primary" onClick={openAddForm}><Plus size={16} /> Add Lead</button>
+        </div>
       </div>
 
       {/* ── Leads Table ── */}
@@ -333,22 +392,22 @@ const Leads: React.FC = () => {
                 <tr><td colSpan={8} className="empty-state">No leads found.</td></tr>
               ) : currentLeads.map((lead) => (
                 <tr key={lead.id} className={lead.isPaused ? 'row-inactive' : ''}>
-                  <td className="lead-client-cell">
+                  <td className="lead-client-cell" data-label="CLIENT">
                     <div className="lead-client-name">{lead.name || 'Unnamed'}</div>
                     {lead.businessName && <div className="lead-business-name">{lead.businessName}</div>}
                     <div className="lead-client-phone">{lead.phoneNumber}</div>
                   </td>
-                  <td className="lead-service">{lead.service || '—'}</td>
-                  <td className="lead-deal">{formatCurrency(lead.dealValue, customer?.currency)}</td>
-                  <td><span className={`lead-status-badge ${getStatusClass(lead.status)}`}>{lead.status}</span></td>
-                  <td className="lead-assigned">{lead.assignedTo || 'AI Agent'}</td>
-                  <td className="lead-followup">{formatDate(lead.followUpDate)}</td>
-                  <td>
+                  <td className="lead-service" data-label="SERVICE">{lead.service || '—'}</td>
+                  <td className="lead-deal" data-label="DEAL">{formatCurrency(lead.dealValue, customer?.currency)}</td>
+                  <td data-label="STATUS"><span className={`lead-status-badge ${getStatusClass(lead.status)}`}>{lead.status}</span></td>
+                  <td className="lead-assigned" data-label="ASSIGNED">{lead.assignedTo || 'AI Agent'}</td>
+                  <td className="lead-followup" data-label="FOLLOW-UP">{formatDate(lead.followUpDate)}</td>
+                  <td data-label="ACTIVE">
                     <button className={`toggle-status-btn ${lead.isPaused ? 'inactive' : 'active'}`} onClick={() => handleToggleLead(lead)} title={lead.isPaused ? 'Paused — click to activate' : 'Active — click to pause'}>
                       {lead.isPaused ? <ToggleLeft size={22} /> : <ToggleRight size={22} />}
                     </button>
                   </td>
-                  <td className="text-right">
+                  <td className="text-right" data-label="ACTIONS">
                     <div className="lead-actions">
                       <button className="action-btn view" title="View" onClick={() => openViewModal(lead)}><Eye size={15} /></button>
                       <button className="action-btn edit" title="Edit" onClick={() => openEditForm(lead)}><Edit2 size={15} /></button>

@@ -200,8 +200,51 @@
     padding: 1rem;
   }
   
-  .glass-table {
-    white-space: nowrap;
+  .glass-table,
+  .glass-table tbody,
+  .glass-table tr,
+  .glass-table th,
+  .glass-table td {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .glass-table thead {
+    display: none;
+  }
+
+  .glass-table tr {
+    margin-bottom: 1rem;
+    background: var(--card-bg, #fff);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+  }
+
+  .glass-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: right;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--card-border);
+    white-space: normal;
+  }
+
+  .glass-table td:last-child {
+    border-bottom: none;
+  }
+
+  .glass-table td::before {
+    content: attr(data-label);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    flex-shrink: 0;
+    margin-right: 1rem;
+    text-align: left;
   }
 }
 
@@ -480,3 +523,38 @@
   white-space: nowrap;
   font-family: 'JetBrains Mono', monospace;
 }
+
+/* ── Leads Chart ── */
+.leads-chart-container {
+  width: 100%;
+  height: 250px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 20px 10px 30px 10px;
+  position: relative;
+  overflow-x: auto;
+}
+
+.leads-chart-bar-wrap {
+  width: 60px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .leads-chart-container {
+    gap: 3px;
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .leads-chart-bar-wrap {
+    width: 40px;
+  }
+}
+

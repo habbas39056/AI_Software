@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Sidebar from './Sidebar';
 import TopHeader from './TopHeader';
+import MobileBottomNav from './MobileBottomNav';
 import './Layout.css';
 
 interface LayoutProps {
@@ -52,6 +53,8 @@ const Layout: React.FC<LayoutProps> = ({ children, role, userName, userProfileIm
           {children}
         </div>
       </main>
+      
+      <MobileBottomNav role={role} />
     </div>
   );
 };

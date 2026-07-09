@@ -75,6 +75,7 @@
     margin-left: 0;
     width: 100%;
     min-height: calc(100vh - 60px); /* Adjust for header height */
+    padding-bottom: 80px; /* Space for MobileBottomNav */
   }
 
   .mobile-nav-header {
