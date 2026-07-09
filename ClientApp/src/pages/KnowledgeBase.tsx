@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { knowledgeService, adminService, clientService } from '../services/api';
-import { ArrowLeft, Plus, Trash2, X, Edit2, Upload, FileText, Image, Video, File } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, X, Edit2, Upload, FileText, Image, Video, File, Download } from 'lucide-react';
 import './KnowledgeBase.css';
 
 const FILE_TYPE_ICONS: Record<string, React.ReactNode> = {
@@ -28,6 +28,11 @@ const KnowledgeBase: React.FC = () => {
   const [newArticle, setNewArticle] = useState({ topic: '', content: '' });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Import/Export State
+  const excelInputRef = useRef<HTMLInputElement>(null);
+  const [isImporting, setIsImporting] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -134,6 +139,45 @@ const KnowledgeBase: React.FC = () => {
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const targetId = id || customer?.whatsAppNumber || 'all';
+      const blob = await knowledgeService.exportExcel(targetId);
+      const url = window.URL.createObjectURL(new Blob([blob]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'knowledge_base_export.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+    } catch (error) {
+      console.error('Failed to export knowledge base:', error);
+      alert('Failed to export knowledge base');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsImporting(true);
+    try {
+      const targetId = id || customer?.whatsAppNumber || 'all';
+      const result = await knowledgeService.importExcel(targetId, file);
+      alert(result.message);
+      fetchData(); // Refresh knowledge base
+    } catch (error) {
+      console.error('Failed to import knowledge base:', error);
+      alert('Failed to import knowledge base');
+    } finally {
+      setIsImporting(false);
+      if (excelInputRef.current) excelInputRef.current.value = '';
+    }
+  };
+
   if (loading) return <div className="loading">Loading Knowledge Base...</div>;
 
   return (
@@ -153,9 +197,24 @@ const KnowledgeBase: React.FC = () => {
       <div className="white-box">
         <div className="box-header">
           <h2 className="box-title">Knowledge Base</h2>
-          <button className="icon-btn-circle orange" onClick={openAddModal}>
-            <Plus size={20} />
-          </button>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <button className="btn-secondary" onClick={handleExport} disabled={isExporting} title="Export to Excel">
+              <Download size={16} /> <span className="hide-on-mobile">{isExporting ? 'Exporting...' : 'Export'}</span>
+            </button>
+            <button className="btn-secondary" onClick={() => excelInputRef.current?.click()} disabled={isImporting} title="Import from Excel">
+              <Upload size={16} /> <span className="hide-on-mobile">{isImporting ? 'Importing...' : 'Import'}</span>
+            </button>
+            <input 
+              type="file" 
+              ref={excelInputRef} 
+              style={{ display: 'none' }} 
+              accept=".xlsx, .xls"
+              onChange={handleImport}
+            />
+            <button className="icon-btn-circle orange" onClick={openAddModal} title="Add Article">
+              <Plus size={20} />
+            </button>
+          </div>
         </div>
 
         <div className="table-responsive">

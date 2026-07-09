@@ -94,6 +94,18 @@ export const knowledgeService = {
     const response = await api.delete(`/knowledge/${id}`);
     return response.data;
   },
+  exportExcel: async (customerId: string) => {
+    const response = await api.get(`/knowledge/export/${customerId || 'all'}`, { responseType: 'blob' });
+    return response.data;
+  },
+  importExcel: async (customerId: string, file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const response = await api.post(`/knowledge/import/${customerId || 'all'}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return response.data;
+  },
 };
 
 export const leadsService = {
