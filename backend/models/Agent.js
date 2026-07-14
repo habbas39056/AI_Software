@@ -47,6 +47,16 @@ const Agent = sequelize.define('Agent', {
     defaultValue: 'UTC',
     field: 'Timezone'
   },
+  instagramAccessToken: {
+    type: DataTypes.STRING(500),
+    allowNull: true,
+    field: 'InstagramAccessToken'
+  },
+  instagramAccountId: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    field: 'InstagramAccountId'
+  },
 }, {
   tableName: 'Agents',
   timestamps: false,

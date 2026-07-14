@@ -91,10 +91,15 @@ const ClientDetails: React.FC = () => {
   };
 
   const connectInstagram = async () => {
-    if (!id) return;
+    if (!id || !data) return;
+    const agentId = data.customer?.agents?.[0]?.id;
+    if (!agentId) {
+      alert('No agent found to link Instagram. Please connect a WhatsApp agent first.');
+      return;
+    }
     setInstaLoading(true);
     try {
-      const response = await instagramService.getAuthUrl(id);
+      const response = await instagramService.getAuthUrl(agentId);
       if (response.url) {
         window.location.href = response.url; // Redirect to Instagram OAuth
       }
@@ -222,7 +227,7 @@ const ClientDetails: React.FC = () => {
           <div className="mt-1">
             <p className="label mb-1">Status:</p>
             <div className="instance-name-box">
-              {customer.instagramAccessToken ? (
+              {customer.agents?.[0]?.instagramAccessToken ? (
                 <span className="text-success flex align-center"><CheckCircle size={14} className="mr-1" /> Connected</span>
               ) : 'Not Connected'}
             </div>

@@ -83,12 +83,12 @@ const Settings: React.FC = () => {
   };
 
   const handleConnectInstagram = async () => {
-    const customerId = data?.customer?.whatsAppNumber || data?.agents?.[0]?.customerId;
-    if (!customerId) return alert('No customer ID found to link Instagram.');
+    const agentId = data?.agents?.[0]?.id;
+    if (!agentId) return alert('No agent found to link Instagram. Please connect a WhatsApp agent first.');
     
     setInstaLoading(true);
     try {
-      const response = await instagramService.getAuthUrl(customerId);
+      const response = await instagramService.getAuthUrl(agentId);
       if (response.url) {
         window.location.href = response.url; // Redirect to Instagram OAuth
       }
@@ -386,7 +386,7 @@ const Settings: React.FC = () => {
                 <Camera size={28} />
               </div>
               <div className="mt-1">
-                {data?.customer?.instagramAccessToken ? (
+                {data?.agents?.[0]?.instagramAccessToken ? (
                   <span className="text-success flex align-center" style={{ fontWeight: 600, fontSize: '1.1rem' }}><CheckCircle size={18} className="mr-1" /> Connected to Meta</span>
                 ) : (
                   <p>Click below to authorize your Instagram Business account via Meta.</p>
@@ -399,7 +399,7 @@ const Settings: React.FC = () => {
                 disabled={instaLoading}
                 style={{ width: '100%', maxWidth: '300px', background: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)', border: 'none' }}
               >
-                {instaLoading ? <Loader2 size={18} className="animate-spin" /> : (data?.customer?.instagramAccessToken ? 'Reconnect Instagram' : 'Connect Instagram')}
+                {instaLoading ? <Loader2 size={18} className="animate-spin" /> : (data?.agents?.[0]?.instagramAccessToken ? 'Reconnect Instagram' : 'Connect Instagram')}
               </button>
             </div>
           </div>

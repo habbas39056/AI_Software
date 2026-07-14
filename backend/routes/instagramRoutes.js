@@ -1,15 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
-const { Customer } = require('../models');
+const { Customer, Agent } = require('../models');
 
 // Initiates the Facebook OAuth flow for Instagram Business
-// Expects customerId (which is the whatsAppNumber) to track which customer is connecting
+// Expects agentId (or customerId for fallback) to track which agent is connecting
 router.get('/auth', (req, res) => {
-  const { customerId } = req.query;
+  const { agentId, customerId } = req.query;
   
-  if (!customerId) {
-    return res.status(400).json({ error: 'customerId is required' });
+  if (!agentId && !customerId) {
+    return res.status(400).json({ error: 'agentId or customerId is required' });
   }
 
   const clientId = process.env.META_APP_ID;
@@ -19,8 +19,10 @@ router.get('/auth', (req, res) => {
     return res.status(500).json({ error: 'META_APP_ID and META_REDIRECT_URI must be configured in .env' });
   }
 
-  // Pass the customerId in the state parameter
-  const state = encodeURIComponent(customerId);
+  // Pass the agentId (or customerId fallback) in the state parameter
+  const stateVal = agentId || customerId;
+  const state = encodeURIComponent(stateVal);
+  
   // Scopes required for Instagram Graph API
   const scope = 'instagram_basic,instagram_manage_comments,instagram_manage_insights,instagram_content_publish,instagram_manage_messages,pages_show_list,pages_read_engagement';
 
@@ -43,7 +45,7 @@ router.get('/callback', async (req, res) => {
     return res.status(400).send('Missing code or state parameter');
   }
 
-  const customerId = decodeURIComponent(state);
+  const stateVal = decodeURIComponent(state);
 
   try {
     const clientId = process.env.META_APP_ID;
@@ -89,15 +91,24 @@ router.get('/callback', async (req, res) => {
     }
 
     // 3. Save to database
-    const customer = await Customer.findOne({ where: { whatsAppNumber: customerId } });
-    if (customer) {
-      customer.instagramAccessToken = longLivedToken;
-      if (fbUserId) {
-        customer.instagramAccountId = fbUserId;
-      }
-      await customer.save();
+    let agent = null;
+    if (!isNaN(stateVal)) {
+      // It's a numeric agentId
+      agent = await Agent.findByPk(parseInt(stateVal));
     } else {
-      console.error('Customer not found for Instagram auth callback:', customerId);
+      // Fallback: it's a customerId (whatsAppNumber), find their first agent
+      agent = await Agent.findOne({ where: { customerId: stateVal } });
+    }
+
+    if (agent) {
+      agent.instagramAccessToken = longLivedToken;
+      if (fbUserId) {
+        agent.instagramAccountId = fbUserId;
+      }
+      await agent.save();
+      console.log(`Instagram connected for agent ID: ${agent.id}`);
+    } else {
+      console.error('Agent not found for Instagram auth callback state:', stateVal);
     }
 
     // 4. Redirect back to frontend

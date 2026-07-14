@@ -314,8 +314,11 @@ export const externalModulesService = {
 };
 
 export const instagramService = {
-  getAuthUrl: async (customerId: string) => {
-    const response = await api.get(`/instagram/auth?customerId=${customerId}`);
+  getAuthUrl: async (agentId?: number | string, customerId?: string) => {
+    const params = new URLSearchParams();
+    if (agentId) params.append('agentId', agentId.toString());
+    if (customerId) params.append('customerId', customerId);
+    const response = await api.get(`/instagram/auth?${params.toString()}`);
     return response.data;
   }
 };
