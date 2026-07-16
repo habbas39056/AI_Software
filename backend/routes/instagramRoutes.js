@@ -235,14 +235,35 @@ router.get('/dashboard-data', authenticate, async (req, res) => {
         };
       }
     } catch (err) {
-      console.warn('Failed to fetch real Instagram profile, using basic details:', err.response?.data || err.message);
-      // Fallback details if the API fails (sandbox restrictions, etc.)
-      profileData.username = 'adwise_agent';
-      profileData.name = 'Adwise Business';
-      profileData.profile_picture_url = 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=150&auto=format&fit=crop&q=60';
-      profileData.followers_count = 1240;
-      profileData.media_count = 42;
-      isMock = true;
+      console.warn('Failed to fetch real Instagram profile, trying Facebook user profile fallback:', err.response?.data || err.message);
+      
+      try {
+        const meResponse = await axios.get(`https://graph.facebook.com/v18.0/me`, {
+          params: {
+            fields: 'id,name,picture.type(large)',
+            access_token: accessToken
+          },
+          timeout: 5000
+        });
+        if (meResponse.data) {
+          profileData.id = meResponse.data.id;
+          profileData.name = meResponse.data.name;
+          profileData.username = 'Meta Profile';
+          profileData.profile_picture_url = meResponse.data.picture?.data?.url || 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=150&auto=format&fit=crop&q=60';
+          profileData.followers_count = 0;
+          profileData.media_count = 0;
+          isMock = false;
+        }
+      } catch (meErr) {
+        console.warn('Failed to fetch fallback Facebook user details:', meErr.message);
+        // Final fallback details if all requests fail
+        profileData.username = 'adwise_agent';
+        profileData.name = 'Adwise Business';
+        profileData.profile_picture_url = 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=150&auto=format&fit=crop&q=60';
+        profileData.followers_count = 1240;
+        profileData.media_count = 42;
+        isMock = true;
+      }
     }
 
     // 2. Fetch Media
