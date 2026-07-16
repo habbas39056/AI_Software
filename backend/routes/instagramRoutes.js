@@ -24,7 +24,7 @@ router.get('/auth', (req, res) => {
   const state = encodeURIComponent(stateVal);
   
   // Scopes required for Instagram Graph API
-  const scope = 'instagram_basic,instagram_manage_comments,instagram_manage_insights,instagram_content_publish,instagram_manage_messages,pages_show_list,pages_read_engagement';
+  const scope = 'instagram_basic,instagram_manage_comments,instagram_manage_insights,instagram_content_publish,instagram_manage_messages,pages_show_list,pages_read_engagement,pages_manage_metadata';
 
   // Facebook Login Dialog URL
   const authUrl = `https://www.facebook.com/v18.0/dialog/oauth?client_id=${clientId}&display=page&extras={"setup":{"channel":"IG_API"}}&redirect_uri=${redirectUri}&response_type=code&scope=${scope}&state=${state}`;
@@ -107,6 +107,44 @@ router.get('/callback', async (req, res) => {
       }
       await agent.save();
       console.log(`Instagram connected for agent ID: ${agent.id}`);
+
+      // Automatically subscribe Page(s) to the Webhook App
+      try {
+        console.log('Fetching Facebook Pages to subscribe to webhooks...');
+        const pagesResponse = await axios.get('https://graph.facebook.com/v18.0/me/accounts', {
+          params: { access_token: longLivedToken }
+        });
+
+        const pages = pagesResponse.data.data || [];
+        console.log(`Found ${pages.length} Facebook Pages for agent ID: ${agent.id}`);
+
+        for (const page of pages) {
+          try {
+            console.log(`Subscribing page "${page.name}" (ID: ${page.id}) to webhooks...`);
+            const subResponse = await axios.post(
+              `https://graph.facebook.com/v18.0/${page.id}/subscribed_apps`,
+              null,
+              {
+                params: {
+                  subscribed_fields: 'messages,messaging_postbacks,message_reactions,comments',
+                  access_token: page.access_token
+                }
+              }
+            );
+            console.log(`Successfully subscribed page "${page.name}":`, subResponse.data);
+          } catch (subErr) {
+            console.error(
+              `Failed to subscribe page "${page.name}" (ID: ${page.id}):`,
+              subErr.response?.data || subErr.message
+            );
+          }
+        }
+      } catch (pagesErr) {
+        console.error(
+          'Failed to retrieve Facebook Pages for webhook subscription:',
+          pagesErr.response?.data || pagesErr.message
+        );
+      }
     } else {
       console.error('Agent not found for Instagram auth callback state:', stateVal);
     }
