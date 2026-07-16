@@ -439,9 +439,63 @@ router.get('/inbox/conversations', authenticate, async (req, res) => {
       return res.json({ connected: false });
     }
 
+    const pageId = agent.facebookPageId;
+    const accessToken = agent.facebookAccessToken;
+
+    // Check if we have active Facebook credentials to query real Meta APIs
+    if (pageId && accessToken) {
+      try {
+        console.log(`[Real Inbox] Fetching real conversations from Meta for page: ${pageId}...`);
+        const response = await axios.get(`https://graph.facebook.com/v18.0/${pageId}/conversations`, {
+          params: {
+            fields: 'id,link,updated_time,message_count,unread_count,participants,messages.limit(1){message,from,created_time}',
+            access_token: accessToken
+          },
+          timeout: 8000
+        });
+
+        if (response.data?.data) {
+          const realThreads = response.data.data.map(thread => {
+            const lastMsgObj = thread.messages?.data?.[0];
+            const senderName = thread.participants?.data?.find(p => p.id !== pageId)?.name || 'Messenger User';
+            const senderId = thread.participants?.data?.find(p => p.id !== pageId)?.id || 'unknown';
+            
+            // Determine platform based on link or participants or default to messenger
+            let platform = 'messenger';
+            if (thread.link?.includes('instagram.com') || thread.id?.includes('ig_')) {
+              platform = 'instagram';
+            }
+
+            return {
+              id: thread.id,
+              name: senderName,
+              username: senderId,
+              platform: platform,
+              avatar: `https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150&auto=format&fit=crop&q=60`, // Default avatar placeholder
+              unreadCount: thread.unread_count || 0,
+              updated_time: thread.updated_time,
+              lastMessage: lastMsgObj ? {
+                text: lastMsgObj.message || 'Sent an attachment',
+                sender: lastMsgObj.from?.id === pageId ? 'me' : 'customer',
+                timestamp: lastMsgObj.created_time
+              } : null
+            };
+          });
+
+          return res.json({
+            connected: true,
+            conversations: realThreads,
+            isMock: false
+          });
+        }
+      } catch (err) {
+        console.warn('[Real Inbox] Failed to fetch real conversations from Meta, falling back to mock:', err.response?.data || err.message);
+      }
+    }
+
+    // FALLBACK: Serve interactive mock threads
     const agentKey = agent.id;
     initializeMockInbox(agentKey);
-
     const conversations = mockInboxSessions[agentKey];
 
     const threadsSummary = conversations.map(thread => {
@@ -464,7 +518,8 @@ router.get('/inbox/conversations', authenticate, async (req, res) => {
 
     res.json({
       connected: true,
-      conversations: threadsSummary
+      conversations: threadsSummary,
+      isMock: true
     });
   } catch (error) {
     console.error('Error fetching inbox conversations:', error);
@@ -483,6 +538,63 @@ router.get('/inbox/conversations/:threadId/messages', authenticate, async (req, 
       return res.status(404).json({ error: 'Agent not found' });
     }
 
+    // Check if it's a mock thread or if we should fetch from Meta
+    const isMockThread = threadId.startsWith('mock_') || threadId.startsWith('thread_');
+    const pageId = agent.facebookPageId;
+    const accessToken = agent.facebookAccessToken;
+
+    if (!isMockThread && pageId && accessToken) {
+      try {
+        console.log(`[Real Inbox] Fetching real messages from Meta for thread: ${threadId}...`);
+        const response = await axios.get(`https://graph.facebook.com/v18.0/${threadId}/messages`, {
+          params: {
+            fields: 'id,message,from,created_time,attachments',
+            access_token: accessToken,
+            limit: 25
+          },
+          timeout: 8000
+        });
+
+        if (response.data?.data) {
+          const sortedMsgs = response.data.data.sort((a, b) => new Date(a.created_time) - new Date(b.created_time));
+          const messages = sortedMsgs.map(msg => ({
+            id: msg.id,
+            text: msg.message || 'Sent an attachment',
+            sender: msg.from?.id === pageId ? 'me' : 'customer',
+            timestamp: msg.created_time
+          }));
+
+          // Fetch recipient participant details if possible
+          let participantName = 'Messenger User';
+          try {
+            const threadDetail = await axios.get(`https://graph.facebook.com/v18.0/${threadId}`, {
+              params: {
+                fields: 'participants',
+                access_token: accessToken
+              }
+            });
+            const otherUser = threadDetail.data?.participants?.data?.find(p => p.id !== pageId);
+            if (otherUser) participantName = otherUser.name;
+          } catch (pe) {
+            console.warn('Failed to fetch participant names:', pe.message);
+          }
+
+          return res.json({
+            threadId: threadId,
+            name: participantName,
+            username: threadId,
+            platform: threadId.includes('ig_') ? 'instagram' : 'messenger',
+            avatar: `https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150&auto=format&fit=crop&q=60`,
+            messages: messages,
+            isMock: false
+          });
+        }
+      } catch (err) {
+        console.warn('[Real Inbox] Failed to fetch real messages, falling back to mock:', err.response?.data || err.message);
+      }
+    }
+
+    // FALLBACK: Serve mock thread messages
     const agentKey = agent.id;
     initializeMockInbox(agentKey);
 
@@ -501,7 +613,8 @@ router.get('/inbox/conversations/:threadId/messages', authenticate, async (req, 
       username: thread.username,
       platform: thread.platform,
       avatar: thread.avatar,
-      messages: thread.messages
+      messages: thread.messages,
+      isMock: true
     });
   } catch (error) {
     console.error('Error fetching thread messages:', error);
@@ -521,6 +634,51 @@ router.post('/inbox/conversations/:threadId/send', authenticate, async (req, res
       return res.status(404).json({ error: 'Agent not found' });
     }
 
+    const isMockThread = threadId.startsWith('mock_') || threadId.startsWith('thread_');
+    const pageId = agent.facebookPageId;
+    const accessToken = agent.facebookAccessToken;
+
+    if (!isMockThread && pageId && accessToken) {
+      try {
+        console.log(`[Real Inbox] Sending real reply to thread: ${threadId}...`);
+        
+        const threadDetail = await axios.get(`https://graph.facebook.com/v18.0/${threadId}`, {
+          params: {
+            fields: 'participants',
+            access_token: accessToken
+          }
+        });
+        const recipient = threadDetail.data?.participants?.data?.find(p => p.id !== pageId);
+        
+        if (!recipient) {
+          return res.status(400).json({ error: 'Could not resolve recipient PSID for real Meta message send' });
+        }
+
+        const sendResponse = await axios.post(`https://graph.facebook.com/v18.0/${pageId}/messages`, {
+          recipient: { id: recipient.id },
+          messaging_type: 'RESPONSE',
+          message: { text: text }
+        }, {
+          params: { access_token: accessToken }
+        });
+
+        return res.json({
+          success: true,
+          message: {
+            id: sendResponse.data?.message_id || `real_${Date.now()}`,
+            text: text,
+            sender: 'me',
+            timestamp: new Date().toISOString()
+          },
+          isMock: false
+        });
+      } catch (err) {
+        console.error('[Real Inbox] Failed to send real message via Meta API:', err.response?.data || err.message);
+        return res.status(500).json({ error: 'Failed to send real message via Meta API' });
+      }
+    }
+
+    // FALLBACK: Mock auto-replies
     const agentKey = agent.id;
     initializeMockInbox(agentKey);
 
@@ -562,7 +720,7 @@ router.post('/inbox/conversations/:threadId/send', authenticate, async (req, res
       console.log(`[Mock Inbox] Auto-replied to thread: ${threadId}`);
     }, 1500);
 
-    res.json({ success: true, message: newMsg });
+    res.json({ success: true, message: newMsg, isMock: true });
 
   } catch (error) {
     console.error('Error sending message:', error);
