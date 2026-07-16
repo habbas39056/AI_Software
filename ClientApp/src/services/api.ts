@@ -338,6 +338,18 @@ export const facebookService = {
   getDashboardData: async () => {
     const response = await api.get('/facebook/dashboard-data');
     return response.data;
+  },
+  getInboxConversations: async () => {
+    const response = await api.get('/facebook/inbox/conversations');
+    return response.data;
+  },
+  getConversationMessages: async (threadId: string) => {
+    const response = await api.get(`/facebook/inbox/conversations/${threadId}/messages`);
+    return response.data;
+  },
+  sendMessage: async (threadId: string, text: string) => {
+    const response = await api.post(`/facebook/inbox/conversations/${threadId}/send`, { text });
+    return response.data;
   }
 };
 

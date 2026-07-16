@@ -22,6 +22,7 @@ import ExternalComplaints from './pages/ExternalComplaints';
 import ExternalInstructions from './pages/ExternalInstructions';
 import InstagramDashboard from './pages/InstagramDashboard';
 import FacebookDashboard from './pages/FacebookDashboard';
+import Inbox from './pages/Inbox';
 import { authService } from './services/api';
 import './App.css';
 
@@ -108,6 +109,7 @@ function App() {
             <Route path="/billing" element={user.role === 'Super Admin' ? <Billing /> : <ClientBilling />} />
             <Route path="/instagram" element={<InstagramDashboard />} />
             <Route path="/facebook" element={<FacebookDashboard />} />
+            <Route path="/inbox" element={<Inbox />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/security" element={<Profile />} />
             <Route path="/profile" element={<Profile />} />

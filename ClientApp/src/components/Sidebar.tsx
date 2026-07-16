@@ -17,7 +17,8 @@ import {
   AlertTriangle,
   FileText,
   Camera,
-  MessageSquare
+  MessageSquare,
+  MessageCircle
 } from 'lucide-react';
 import { authService } from '../services/api';
 import './Sidebar.css';
@@ -101,6 +102,12 @@ const Sidebar: React.FC<SidebarProps> = ({ role, userName, userProfileImage, mod
               <KanbanSquare size={18} />
               Pipeline
             </NavLink>
+            {role !== 'TeamMember' && (
+              <NavLink to="/inbox" onClick={closeSidebar} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                <MessageCircle size={18} />
+                Live Chat Inbox
+              </NavLink>
+            )}
             {role !== 'TeamMember' && (
               <NavLink to="/instagram" onClick={closeSidebar} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
                 <Camera size={18} />

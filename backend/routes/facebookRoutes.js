@@ -311,4 +311,263 @@ router.get('/dashboard-data', authenticate, async (req, res) => {
   }
 });
 
+// In-memory mock store for demo interactive inbox messages
+const mockInboxSessions = {};
+
+const initializeMockInbox = (agentId) => {
+  if (mockInboxSessions[agentId]) return;
+
+  mockInboxSessions[agentId] = [
+    {
+      id: 'thread_kerry',
+      name: 'Kerry Jules_019',
+      username: 'kerry_jules',
+      platform: 'messenger',
+      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=60',
+      unreadCount: 0,
+      updated_time: '2022-09-23T12:52:00.000Z',
+      messages: [
+        {
+          id: 'msg_k1',
+          text: 'Hi, I need to cancel my plant diagnosis appointment. Can I reschedule? What other times that would work?',
+          sender: 'customer',
+          timestamp: '2022-09-23T12:52:00.000Z'
+        }
+      ]
+    },
+    {
+      id: 'thread_ted',
+      name: 'ted_graham321',
+      username: 'ted_graham',
+      platform: 'messenger',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=60',
+      unreadCount: 0,
+      updated_time: '2022-09-14T10:14:00.000Z',
+      messages: [
+        {
+          id: 'msg_t1',
+          text: 'Hi, is the snake plant still in stock?',
+          sender: 'customer',
+          timestamp: '2022-09-14T10:12:00.000Z'
+        },
+        {
+          id: 'msg_t2',
+          text: 'Yes we still have some in stock. You can order online or drop by our nursery!',
+          sender: 'me',
+          timestamp: '2022-09-14T10:14:00.000Z'
+        }
+      ]
+    },
+    {
+      id: 'thread_stella',
+      name: 'stellas_gr00v3',
+      username: 'stella_green',
+      platform: 'instagram',
+      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&auto=format&fit=crop&q=60',
+      unreadCount: 0,
+      updated_time: '2022-02-02T15:30:00.000Z',
+      messages: [
+        {
+          id: 'msg_s1',
+          text: 'How can I get 20% off?',
+          sender: 'customer',
+          timestamp: '2022-02-02T15:30:00.000Z'
+        }
+      ]
+    },
+    {
+      id: 'thread_santi',
+      name: 'super_santi_73',
+      username: 'santi_nursery',
+      platform: 'comments',
+      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=60',
+      unreadCount: 12,
+      updated_time: '2021-03-11T16:45:00.000Z',
+      messages: [
+        {
+          id: 'msg_sa1',
+          text: 'Great plants! How much for the large monstera?',
+          sender: 'customer',
+          timestamp: '2021-03-11T16:45:00.000Z'
+        }
+      ]
+    },
+    {
+      id: 'thread_wyatt',
+      name: 'lil_wyatt838',
+      username: 'wyatt_b',
+      platform: 'messenger',
+      avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=60',
+      unreadCount: 0,
+      updated_time: '2021-03-10T09:20:00.000Z',
+      messages: [
+        {
+          id: 'msg_w1',
+          text: 'hi',
+          sender: 'customer',
+          timestamp: '2021-03-10T09:20:00.000Z'
+        }
+      ]
+    },
+    {
+      id: 'thread_sunflower',
+      name: 'sunflower_power77',
+      username: 'sunflower_n',
+      platform: 'instagram',
+      avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=60',
+      unreadCount: 0,
+      updated_time: '2020-05-10T14:10:00.000Z',
+      messages: [
+        {
+          id: 'msg_sf1',
+          text: 'Do you need an employee?',
+          sender: 'customer',
+          timestamp: '2020-05-10T14:10:00.000Z'
+        }
+      ]
+    }
+  ];
+};
+
+// GET conversations for CRM Live Chat Inbox
+router.get('/inbox/conversations', authenticate, async (req, res) => {
+  try {
+    const customerId = req.user.customerId;
+    const agent = await Agent.findOne({ where: { customerId } });
+
+    if (!agent) {
+      return res.json({ connected: false });
+    }
+
+    const agentKey = agent.id;
+    initializeMockInbox(agentKey);
+
+    const conversations = mockInboxSessions[agentKey];
+
+    const threadsSummary = conversations.map(thread => {
+      const lastMsg = thread.messages[thread.messages.length - 1];
+      return {
+        id: thread.id,
+        name: thread.name,
+        username: thread.username,
+        platform: thread.platform,
+        avatar: thread.avatar,
+        unreadCount: thread.unreadCount,
+        updated_time: thread.updated_time,
+        lastMessage: lastMsg ? {
+          text: lastMsg.text,
+          sender: lastMsg.sender,
+          timestamp: lastMsg.timestamp
+        } : null
+      };
+    });
+
+    res.json({
+      connected: true,
+      conversations: threadsSummary
+    });
+  } catch (error) {
+    console.error('Error fetching inbox conversations:', error);
+    res.status(500).json({ error: 'Failed to retrieve inbox conversations' });
+  }
+});
+
+// GET message list for a specific thread
+router.get('/inbox/conversations/:threadId/messages', authenticate, async (req, res) => {
+  try {
+    const { threadId } = req.params;
+    const customerId = req.user.customerId;
+    const agent = await Agent.findOne({ where: { customerId } });
+
+    if (!agent) {
+      return res.status(404).json({ error: 'Agent not found' });
+    }
+
+    const agentKey = agent.id;
+    initializeMockInbox(agentKey);
+
+    const conversations = mockInboxSessions[agentKey];
+    const thread = conversations.find(t => t.id === threadId);
+
+    if (!thread) {
+      return res.status(404).json({ error: 'Conversation thread not found' });
+    }
+
+    thread.unreadCount = 0;
+
+    res.json({
+      threadId: thread.id,
+      name: thread.name,
+      username: thread.username,
+      platform: thread.platform,
+      avatar: thread.avatar,
+      messages: thread.messages
+    });
+  } catch (error) {
+    console.error('Error fetching thread messages:', error);
+    res.status(500).json({ error: 'Failed to retrieve thread messages' });
+  }
+});
+
+// POST send message in a thread
+router.post('/inbox/conversations/:threadId/send', authenticate, async (req, res) => {
+  try {
+    const { threadId } = req.params;
+    const { text } = req.body;
+    const customerId = req.user.customerId;
+    const agent = await Agent.findOne({ where: { customerId } });
+
+    if (!agent) {
+      return res.status(404).json({ error: 'Agent not found' });
+    }
+
+    const agentKey = agent.id;
+    initializeMockInbox(agentKey);
+
+    const conversations = mockInboxSessions[agentKey];
+    const thread = conversations.find(t => t.id === threadId);
+
+    if (!thread) {
+      return res.status(404).json({ error: 'Conversation thread not found' });
+    }
+
+    const newMsg = {
+      id: `msg_sent_${Date.now()}`,
+      text: text,
+      sender: 'me',
+      timestamp: new Date().toISOString()
+    };
+
+    thread.messages.push(newMsg);
+    thread.updated_time = newMsg.timestamp;
+
+    // Simulate Client Response after 1.5 seconds to WOW the user
+    setTimeout(() => {
+      let replyText = "Got your message! I'll review and get back to you shortly.";
+      if (threadId === 'thread_kerry') {
+        replyText = "Thanks for the quick reply! That rescheduled slot works perfectly for me. See you then.";
+      } else if (threadId === 'thread_stella') {
+        replyText = "Awesome! Just applied the coupon code. Thank you so much!";
+      }
+
+      const clientReply = {
+        id: `msg_reply_${Date.now()}`,
+        text: replyText,
+        sender: 'customer',
+        timestamp: new Date().toISOString()
+      };
+
+      thread.messages.push(clientReply);
+      thread.updated_time = clientReply.timestamp;
+      console.log(`[Mock Inbox] Auto-replied to thread: ${threadId}`);
+    }, 1500);
+
+    res.json({ success: true, message: newMsg });
+
+  } catch (error) {
+    console.error('Error sending message:', error);
+    res.status(500).json({ error: 'Failed to send message' });
+  }
+});
+
 module.exports = router;
