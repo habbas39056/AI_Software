@@ -11,6 +11,8 @@ const Settings: React.FC = () => {
   const [status, setStatus] = useState<'open' | 'close' | 'connecting' | 'unknown'>('unknown');
   const [instaLoading, setInstaLoading] = useState(false);
   const [fbLoading, setFbLoading] = useState(false);
+  const [instagramProfile, setInstagramProfile] = useState<any>(null);
+  const [facebookProfile, setFacebookProfile] = useState<any>(null);
   
   // Scheduling state
   const [scheduleEnabled, setScheduleEnabled] = useState(false);
@@ -49,6 +51,30 @@ const Settings: React.FC = () => {
         setScheduleStartTime(agent.scheduleStartTime || '09:00');
         setScheduleEndTime(agent.scheduleEndTime || '17:00');
         setTimezone(agent.timezone || 'UTC');
+        
+        // Fetch Instagram details if connected
+        if (agent.instagramAccessToken) {
+          try {
+            const instaData = await instagramService.getDashboardData();
+            if (instaData && instaData.connected) {
+              setInstagramProfile(instaData.profile);
+            }
+          } catch (e) {
+            console.warn('Failed to load Instagram profile in settings:', e);
+          }
+        }
+
+        // Fetch Facebook Page details if connected
+        if (agent.facebookAccessToken) {
+          try {
+            const fbData = await facebookService.getDashboardData();
+            if (fbData && fbData.connected) {
+              setFacebookProfile(fbData.page);
+            }
+          } catch (e) {
+            console.warn('Failed to load Facebook page in settings:', e);
+          }
+        }
       }
       
       const instructionsResp = await instructionsService.getInstructions().catch(() => []);
@@ -417,14 +443,37 @@ const Settings: React.FC = () => {
 
           <div className="sync-content">
             <div className="sync-placeholder" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <div className="sync-icon-large" style={{ color: '#ec4899', background: '#fdf2f8' }}>
-                <Camera size={28} />
-              </div>
-              <div className="mt-1">
+              <div className="mt-1" style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
                 {data?.agents?.[0]?.instagramAccessToken ? (
-                  <span className="text-success flex align-center" style={{ fontWeight: 600, fontSize: '1.1rem' }}><CheckCircle size={18} className="mr-1" /> Connected to Meta</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+                    {instagramProfile?.profile_picture_url ? (
+                      <img 
+                        src={instagramProfile.profile_picture_url} 
+                        alt="Instagram Avatar" 
+                        style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', border: '3px solid #ec4899', padding: '3px' }}
+                      />
+                    ) : (
+                      <div className="sync-icon-large" style={{ color: '#ec4899', background: '#fdf2f8' }}>
+                        <Camera size={28} />
+                      </div>
+                    )}
+                    <span className="text-success flex align-center" style={{ fontWeight: 700, fontSize: '1.2rem', justifyContent: 'center' }}>
+                      <CheckCircle size={18} className="mr-1" /> {instagramProfile?.name || 'Connected to Instagram'}
+                    </span>
+                    {instagramProfile?.username && (
+                      <p style={{ margin: 0, color: '#64748b', fontWeight: 600 }}>@{instagramProfile.username}</p>
+                    )}
+                    {instagramProfile?.id && (
+                      <p style={{ margin: 0, color: '#94a3b8', fontSize: '0.85rem' }}>ID: {instagramProfile.id}</p>
+                    )}
+                  </div>
                 ) : (
-                  <p>Click below to authorize your Instagram Business account via Meta.</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <div className="sync-icon-large" style={{ color: '#ec4899', background: '#fdf2f8' }}>
+                      <Camera size={28} />
+                    </div>
+                    <p className="mt-1">Click below to authorize your Instagram Business account via Meta.</p>
+                  </div>
                 )}
               </div>
               
@@ -458,14 +507,37 @@ const Settings: React.FC = () => {
 
           <div className="sync-content">
             <div className="sync-placeholder" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <div className="sync-icon-large" style={{ color: '#1877f2', background: '#e7f3ff' }}>
-                <Smartphone size={28} />
-              </div>
-              <div className="mt-1">
+              <div className="mt-1" style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
                 {data?.agents?.[0]?.facebookAccessToken ? (
-                  <span className="text-success flex align-center" style={{ fontWeight: 600, fontSize: '1.1rem' }}><CheckCircle size={18} className="mr-1" /> Connected to Facebook Page</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+                    {facebookProfile?.picture?.data?.url ? (
+                      <img 
+                        src={facebookProfile.picture.data.url} 
+                        alt="Facebook Avatar" 
+                        style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', border: '3px solid #1877f2', padding: '3px' }}
+                      />
+                    ) : (
+                      <div className="sync-icon-large" style={{ color: '#1877f2', background: '#e7f3ff' }}>
+                        <Smartphone size={28} />
+                      </div>
+                    )}
+                    <span className="text-success flex align-center" style={{ fontWeight: 700, fontSize: '1.2rem', justifyContent: 'center' }}>
+                      <CheckCircle size={18} className="mr-1" /> {facebookProfile?.name || 'Connected to Facebook Page'}
+                    </span>
+                    {facebookProfile?.username && (
+                      <p style={{ margin: 0, color: '#64748b', fontWeight: 600 }}>@{facebookProfile.username}</p>
+                    )}
+                    {facebookProfile?.id && (
+                      <p style={{ margin: 0, color: '#94a3b8', fontSize: '0.85rem' }}>ID: {facebookProfile.id}</p>
+                    )}
+                  </div>
                 ) : (
-                  <p>Click below to authorize your Facebook Business Page for Messenger via Meta.</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <div className="sync-icon-large" style={{ color: '#1877f2', background: '#e7f3ff' }}>
+                      <Smartphone size={28} />
+                    </div>
+                    <p className="mt-1">Click below to authorize your Facebook Business Page for Messenger via Meta.</p>
+                  </div>
                 )}
               </div>
               
