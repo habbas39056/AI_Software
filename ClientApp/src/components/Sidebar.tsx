@@ -15,7 +15,9 @@ import {
   KanbanSquare,
   DollarSign,
   AlertTriangle,
-  FileText
+  FileText,
+  Camera,
+  MessageSquare
 } from 'lucide-react';
 import { authService } from '../services/api';
 import './Sidebar.css';
@@ -99,6 +101,18 @@ const Sidebar: React.FC<SidebarProps> = ({ role, userName, userProfileImage, mod
               <KanbanSquare size={18} />
               Pipeline
             </NavLink>
+            {role !== 'TeamMember' && (
+              <NavLink to="/instagram" onClick={closeSidebar} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                <Camera size={18} />
+                Instagram Dashboard
+              </NavLink>
+            )}
+            {role !== 'TeamMember' && (
+              <NavLink to="/facebook" onClick={closeSidebar} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+                <MessageSquare size={18} />
+                Facebook Messenger
+              </NavLink>
+            )}
             {role !== 'TeamMember' && (
               <>
                 <NavLink to="/commissions" onClick={closeSidebar} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>

@@ -320,6 +320,24 @@ export const instagramService = {
     if (customerId) params.append('customerId', customerId);
     const response = await api.get(`/instagram/auth?${params.toString()}`);
     return response.data;
+  },
+  getDashboardData: async () => {
+    const response = await api.get('/instagram/dashboard-data');
+    return response.data;
+  }
+};
+
+export const facebookService = {
+  getAuthUrl: async (agentId?: number | string, customerId?: string) => {
+    const params = new URLSearchParams();
+    if (agentId) params.append('agentId', agentId.toString());
+    if (customerId) params.append('customerId', customerId);
+    const response = await api.get(`/facebook/auth?${params.toString()}`);
+    return response.data;
+  },
+  getDashboardData: async () => {
+    const response = await api.get('/facebook/dashboard-data');
+    return response.data;
   }
 };
 

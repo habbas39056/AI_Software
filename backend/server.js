@@ -14,6 +14,7 @@ const uploadRoutes = require('./routes/uploadRoutes');
 const instructionRoutes = require('./routes/instructionRoutes');
 const externalModulesRoutes = require('./routes/externalModulesRoutes');
 const instagramRoutes = require('./routes/instagramRoutes');
+const facebookRoutes = require('./routes/facebookRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -35,6 +36,7 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/instructions', instructionRoutes);
 app.use('/api/external', externalModulesRoutes);
 app.use('/api/instagram', instagramRoutes);
+app.use('/api/facebook', facebookRoutes);
 
 // Serve Static Uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));

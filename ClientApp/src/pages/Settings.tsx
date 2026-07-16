@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { clientService, evolutionService, instructionsService, instagramService } from '../services/api';
+import { clientService, evolutionService, instructionsService, instagramService, facebookService } from '../services/api';
 import { Zap, Loader2, Smartphone, FileText, Plus, Trash2, Edit2, Camera, CheckCircle } from 'lucide-react';
 import './Settings.css';
 
@@ -10,6 +10,7 @@ const Settings: React.FC = () => {
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [status, setStatus] = useState<'open' | 'close' | 'connecting' | 'unknown'>('unknown');
   const [instaLoading, setInstaLoading] = useState(false);
+  const [fbLoading, setFbLoading] = useState(false);
   
   // Scheduling state
   const [scheduleEnabled, setScheduleEnabled] = useState(false);
@@ -19,7 +20,7 @@ const Settings: React.FC = () => {
   const [savingSchedule, setSavingSchedule] = useState(false);
 
   // Tabs state
-  const [activeTab, setActiveTab] = useState<'scheduling' | 'sync' | 'insta_sync' | 'instructions'>('scheduling');
+  const [activeTab, setActiveTab] = useState<'scheduling' | 'sync' | 'insta_sync' | 'fb_sync' | 'instructions'>('scheduling');
 
   // Instructions state
   const [instructions, setInstructions] = useState<{id: number, title: string, content: string}[]>([]);
@@ -97,6 +98,24 @@ const Settings: React.FC = () => {
       alert('Failed to initialize Instagram connection.');
     } finally {
       setInstaLoading(false);
+    }
+  };
+
+  const handleConnectFacebook = async () => {
+    const agentId = data?.agents?.[0]?.id;
+    if (!agentId) return alert('No agent found to link Facebook. Please connect a WhatsApp agent first.');
+    
+    setFbLoading(true);
+    try {
+      const response = await facebookService.getAuthUrl(agentId);
+      if (response.url) {
+        window.location.href = response.url; // Redirect to Facebook OAuth
+      }
+    } catch (error) {
+      console.error('Facebook auth url failed:', error);
+      alert('Failed to initialize Facebook connection.');
+    } finally {
+      setFbLoading(false);
     }
   };
 
@@ -215,6 +234,22 @@ const Settings: React.FC = () => {
           onClick={() => setActiveTab('insta_sync')}
         >
           Instagram Engine Sync
+        </button>
+        <button 
+          style={{ 
+            background: 'none', 
+            border: 'none', 
+            borderBottom: activeTab === 'fb_sync' ? '2px solid #2563eb' : '2px solid transparent', 
+            padding: '0.5rem 0.5rem 0.75rem 0.5rem', 
+            fontSize: '0.95rem', 
+            fontWeight: 500, 
+            color: activeTab === 'fb_sync' ? '#2563eb' : '#64748b',
+            cursor: 'pointer',
+            transition: 'all 0.2s'
+          }}
+          onClick={() => setActiveTab('fb_sync')}
+        >
+          Facebook Engine Sync
         </button>
         <button 
           style={{ 
@@ -400,6 +435,47 @@ const Settings: React.FC = () => {
                 style={{ width: '100%', maxWidth: '300px', background: 'linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%)', border: 'none' }}
               >
                 {instaLoading ? <Loader2 size={18} className="animate-spin" /> : (data?.agents?.[0]?.instagramAccessToken ? 'Reconnect Instagram' : 'Connect Instagram')}
+              </button>
+            </div>
+          </div>
+        </div>
+        )}
+
+        {/* Card 2C: Facebook Messenger AI Engine Sync */}
+        {activeTab === 'fb_sync' && (
+        <div className="settings-card">
+          <div className="card-header">
+            <div className="card-title-group">
+              <div className="card-icon blue">
+                <Smartphone size={20} style={{ color: '#1877f2' }} />
+              </div>
+              <div>
+                <h2 className="card-title">Facebook Messenger Sync</h2>
+                <p className="card-subtitle">Connect your Facebook Business Page</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="sync-content">
+            <div className="sync-placeholder" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <div className="sync-icon-large" style={{ color: '#1877f2', background: '#e7f3ff' }}>
+                <Smartphone size={28} />
+              </div>
+              <div className="mt-1">
+                {data?.agents?.[0]?.facebookAccessToken ? (
+                  <span className="text-success flex align-center" style={{ fontWeight: 600, fontSize: '1.1rem' }}><CheckCircle size={18} className="mr-1" /> Connected to Facebook Page</span>
+                ) : (
+                  <p>Click below to authorize your Facebook Business Page for Messenger via Meta.</p>
+                )}
+              </div>
+              
+              <button 
+                className="btn-primary mt-2" 
+                onClick={handleConnectFacebook} 
+                disabled={fbLoading}
+                style={{ width: '100%', maxWidth: '300px', background: '#1877f2', border: 'none' }}
+              >
+                {fbLoading ? <Loader2 size={18} className="animate-spin" /> : (data?.agents?.[0]?.facebookAccessToken ? 'Reconnect Facebook Page' : 'Connect Facebook Page')}
               </button>
             </div>
           </div>

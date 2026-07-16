@@ -57,6 +57,16 @@ const Agent = sequelize.define('Agent', {
     allowNull: true,
     field: 'InstagramAccountId'
   },
+  facebookAccessToken: {
+    type: DataTypes.STRING(500),
+    allowNull: true,
+    field: 'FacebookAccessToken'
+  },
+  facebookPageId: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    field: 'FacebookPageId'
+  },
 }, {
   tableName: 'Agents',
   timestamps: false,

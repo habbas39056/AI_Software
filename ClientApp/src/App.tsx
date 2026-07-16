@@ -20,6 +20,8 @@ import TeamMembers from './pages/TeamMembers';
 import Commissions from './pages/Commissions';
 import ExternalComplaints from './pages/ExternalComplaints';
 import ExternalInstructions from './pages/ExternalInstructions';
+import InstagramDashboard from './pages/InstagramDashboard';
+import FacebookDashboard from './pages/FacebookDashboard';
 import { authService } from './services/api';
 import './App.css';
 
@@ -104,6 +106,8 @@ function App() {
             <Route path="/commissions" element={<Commissions />} />
             <Route path="/team" element={<TeamMembers />} />
             <Route path="/billing" element={user.role === 'Super Admin' ? <Billing /> : <ClientBilling />} />
+            <Route path="/instagram" element={<InstagramDashboard />} />
+            <Route path="/facebook" element={<FacebookDashboard />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/security" element={<Profile />} />
             <Route path="/profile" element={<Profile />} />
